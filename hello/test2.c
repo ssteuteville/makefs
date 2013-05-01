@@ -3,16 +3,16 @@
 
 int main() 
 {
-    /* 20 consecutive arrays of 15 characters each */    
-    char file_array[20][15] = {'\0'};
-    char file_name[15]      = {'\0'};
+    /* 20 consecutive arrays of 20 characters each */    
+    char file_array[20][20] = {'\0'};
+    char file_name[20]      = {'\0'};
     int i                   = 0;
     int num_files           = 0;
 
     /* open file for reading */
     FILE* input_text = fopen ("files.txt", "r");
     /* open file for writing */
-    FILE* makefile = fopen("Makefile", "wb");
+    FILE* makefile = fopen("Makefile", "w");
 
     if (input_text == NULL)
     {
@@ -20,7 +20,7 @@ int main()
     }
     else 
     {
-        while (fgets(file_name, 15, input_text) != NULL)
+        while (fgets(file_name, 20, input_text) != NULL)
         {
             printf("[%d] read a file: %s", i, file_name);
 
@@ -43,8 +43,12 @@ int main()
 
         /* flags and options can be modifiable later */
         fprintf(makefile, "CC = gcc\n");
-        fprintf(makefile, "CFLAGS = -I.\n");
-        fprintf(makefile, "DEPS =");
+        fprintf(makefile, "CFLAGS = -I.");
+
+        if (num_files > 1)
+        {
+            fprintf(makefile, "\nDEPS =");
+        }
 
         /* print out all .h files */
         int j = 0;
@@ -72,9 +76,13 @@ int main()
                 fprintf(makefile, " %s", file_array[i]);
             }
         }
-        /* to print % add a % before it to escape */
-        fprintf(makefile, "\n\n%%.o: %%.c $(DEPS)");
-        fprintf(makefile, "\n\t$(CC) -c -o $@ $< $(CFLAGS)");
+
+        if (num_files > 1)
+        {
+            /* to print % add a % before it to escape */
+            fprintf(makefile, "\n\n%%.o: %%.c $(DEPS)");
+            fprintf(makefile, "\n\t$(CC) -c -o $@ $< $(CFLAGS)");
+        }
         fprintf(makefile, "\n\nrunnable: $(OBJ)");
         fprintf(makefile, "\n\t$(CC) -o $@ $^ $(CFLAGS)");
         fprintf(makefile, "\n\nclean:");
