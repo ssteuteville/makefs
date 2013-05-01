@@ -4,8 +4,8 @@
 int main() 
 {
     /* 20 consecutive arrays of 20 characters each */    
-    char file_array[20][20] = {'\0'};
-    char file_name[20]      = {'\0'};
+    char file_array[40][40] = {'\0'};
+    char file_name[25]      = {'\0'};
     int i                   = 0;
     int num_files           = 0;
 
@@ -29,7 +29,7 @@ int main()
     }
     else 
     {
-        while (fgets(file_name, 20, input_text) != NULL)
+        while (fgets(file_name, 25, input_text) != NULL)
         {
             printf("[%d] read a file: %s", i, file_name);
 
@@ -50,9 +50,11 @@ int main()
             printf("Array[%d]: %s", i, file_array[i]);
         }
 
-        /* flags and options can be modifiable later */
+        /* flags and options can be modifiable later -- I think these flags
+            are the most we would need to accept from input */
+        fprintf(makefile, ".PHONY: clean\n");
         fprintf(makefile, "CC = gcc\n");
-        fprintf(makefile, "CFLAGS = -I.");
+        fprintf(makefile, "CFLAGS = -I. -g -Wall -pedantic -O2 -Wextra");
 
         if (num_files > 1)
         {
