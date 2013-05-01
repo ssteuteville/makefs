@@ -9,10 +9,19 @@ int main()
     int i                   = 0;
     int num_files           = 0;
 
+    /* execute Linux command: change this path to the directory storing the files
+        to be compiled. test2.c can be compiled and ran from anywhere. The generated
+        Makefile will be put in the folder with the rest of the files. 
+
+        ls -R > files.text will grab all the files in the current directory and 
+        output them each on a newline into files.txt. Then read from that file! */
+    char* cmd = "cd /home/andreas/Documents/makefs/test_prog_multiple_new; ls -R > files.txt";
+    system(cmd);
+
     /* open file for reading */
-    FILE* input_text = fopen ("files.txt", "r");
+    FILE* input_text = fopen ("/home/andreas/Documents/makefs/test_prog_multiple_new/files.txt", "r");
     /* open file for writing */
-    FILE* makefile = fopen("Makefile", "w");
+    FILE* makefile = fopen("/home/andreas/Documents/makefs/test_prog_multiple_new/Makefile", "w");
 
     if (input_text == NULL)
     {
@@ -49,10 +58,6 @@ int main()
         {
             fprintf(makefile, "\nDEPS =");
         }
-
-        /* print out all .h files */
-        int j = 0;
-        char h[] = "h";
 
         /* print out the .h files */
         for (i = 0; i < num_files; ++i)
