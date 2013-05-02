@@ -7,14 +7,14 @@
 int main(int num_args, char* arg_strings[]) 
 {
     /* edit paths to point to directory containing files to be compiled */
-    char* cmd = "cd /home/andreas/Documents/makefs/cpp_test/; ls -R > files.txt";
+    char* cmd = "cd /home/andreas/Documents/makefs/c_test/; ls -R > files.txt";
     system(cmd);
 
     /* open file for reading */
-    FILE* input_text = fopen ("/home/andreas/Documents/makefs/cpp_test/files.txt", "r");
+    FILE* input_text = fopen ("/home/andreas/Documents/makefs/c_test/files.txt", "r");
     
     /* open file for writing */
-    FILE* makefile = fopen("/home/andreas/Documents/makefs/cpp_test/Makefile", "w");
+    FILE* makefile = fopen("/home/andreas/Documents/makefs/c_test/Makefile", "w");
 
     if (input_text == NULL)
     {
@@ -31,6 +31,8 @@ int main(int num_args, char* arg_strings[])
         char allf[5]            = "allf";
         char total_cflags[45]   = "CFLAGS = ";
         bool determine_compiler = false;
+        bool gcc                = false;
+        bool gplusplus          = false;
 
         /* if user enters CFLAGS options */
         if (num_args > 1)
@@ -39,7 +41,7 @@ int main(int num_args, char* arg_strings[])
             if (strcmp(allf, arg_strings[1]) == 0)
             {
                 strcat(total_cflags, "-g -Wall -pedantic -O2 -Wextra");
-                printf("Args read: %s\n", total_cflags);
+                /*printf("Args read: %s\n", total_cflags);*/
             }
             else
             {   
@@ -50,7 +52,7 @@ int main(int num_args, char* arg_strings[])
                     strcat(total_cflags, " ");  
                     i++;              
                 }
-                printf("Args read: %s\n", total_cflags);
+                /*printf("Args read: %s\n", total_cflags);*/
             }
         }
 
@@ -70,8 +72,9 @@ int main(int num_args, char* arg_strings[])
                 {
                     /* compile with gcc */
                     strcat(compiler_choice, "gcc");
-                    printf("%s\n", compiler_choice);
+                    /*printf("%s\n", compiler_choice);*/
                     determine_compiler = true;
+                    gcc = true;
 
                 }
                 /* if a .cpp file is read: specifically if there is a p at the end */
@@ -79,8 +82,9 @@ int main(int num_args, char* arg_strings[])
                 {
                     /* compile with g++ */
                     strcat(compiler_choice, "g++");
-                    printf("%s\n", compiler_choice);
+                    /*printf("%s\n", compiler_choice);*/
                     determine_compiler = true;
+                    gplusplus = true;
                 }
             }
             i++;
@@ -117,8 +121,7 @@ int main(int num_args, char* arg_strings[])
         }
         fprintf(makefile, "\nOBJ =");
 
-        char gcc[13] = "CFLAGS = gcc";
-        if (strcmp(gcc, compiler_choice) == 0)
+        if (gcc == true)
         {
             /* print out .c files (replace c with o) */
             for (i = 0; i < num_files; ++i)
@@ -130,7 +133,7 @@ int main(int num_args, char* arg_strings[])
                 }
             }
         }
-        else { /* g++ */
+        else if (gplusplus == true) { 
             /* print out .cpp files (replace cpp with o) */
             for (i = 0; i < num_files; ++i)
             {
@@ -160,7 +163,7 @@ int main(int num_args, char* arg_strings[])
     fclose(makefile);
 
     /* execute make and get "runnable" executable in directory */
-    cmd = "cd /home/andreas/Documents/makefs/cpp_test; make";
+    cmd = "cd /home/andreas/Documents/makefs/c_test; make";
     system(cmd);
 
     return 0;
