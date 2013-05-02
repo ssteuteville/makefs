@@ -7,14 +7,14 @@
 int main(int num_args, char* arg_strings[]) 
 {
     /* edit paths to point to directory containing files to be compiled */
-    char* cmd = "cd /home/makefs/hello_files; ls -R > files.txt";
+    char* cmd = "cd /home/andreas/Documents/makefs/cpp_test/; ls -R > files.txt";
     system(cmd);
 
     /* open file for reading */
-    FILE* input_text = fopen ("/home/makefs/hello_files/files.txt", "r");
+    FILE* input_text = fopen ("/home/andreas/Documents/makefs/cpp_test/files.txt", "r");
     
     /* open file for writing */
-    FILE* makefile = fopen("/home/makefs/hello_files/Makefile", "w");
+    FILE* makefile = fopen("/home/andreas/Documents/makefs/cpp_test/Makefile", "w");
 
     if (input_text == NULL)
     {
@@ -92,8 +92,7 @@ int main(int num_args, char* arg_strings[])
         /* close the file */
         fclose(input_text);
 
-        /* flags and options can be modifiable later -- I think these flags
-            are the most we would need to accept from input */
+        /* Begin generating Makefile */
         fprintf(makefile, ".PHONY: clean");
         fprintf(makefile, "\n%s", compiler_choice);
 
@@ -118,14 +117,31 @@ int main(int num_args, char* arg_strings[])
         }
         fprintf(makefile, "\nOBJ =");
 
-        /* print out .c files (replace .c with .o) */
-        for (i = 0; i < num_files; ++i)
+        char gcc[13] = "CFLAGS = gcc";
+        if (strcmp(gcc, compiler_choice) == 0)
         {
-            if (file_array[i][strlen(file_array[i])-1] == 'c')
+            /* print out .c files (replace c with o) */
+            for (i = 0; i < num_files; ++i)
             {
-                file_array[i][strlen(file_array[i])-1] = 'o';
-                fprintf(makefile, " %s", file_array[i]);
+                if (file_array[i][strlen(file_array[i])-1] == 'c')
+                {
+                    file_array[i][strlen(file_array[i])-1] = 'o';
+                    fprintf(makefile, " %s", file_array[i]);
+                }
             }
+        }
+        else { /* g++ */
+            /* print out .cpp files (replace cpp with o) */
+            for (i = 0; i < num_files; ++i)
+            {
+                if (file_array[i][strlen(file_array[i])-1] == 'p')
+                {
+                    file_array[i][strlen(file_array[i])-1] = '\0';
+                    file_array[i][strlen(file_array[i])-1] = '\0';
+                    file_array[i][strlen(file_array[i])-1] = 'o';
+                    fprintf(makefile, " %s", file_array[i]);
+                }
+            }            
         }
 
         if (num_files > 1)
@@ -144,7 +160,7 @@ int main(int num_args, char* arg_strings[])
     fclose(makefile);
 
     /* execute make and get "runnable" executable in directory */
-    cmd = "cd /home/makefs/hello_files; make";
+    cmd = "cd /home/andreas/Documents/makefs/cpp_test; make";
     system(cmd);
 
     return 0;
