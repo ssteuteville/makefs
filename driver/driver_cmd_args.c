@@ -7,14 +7,14 @@
 int main(int num_args, char* arg_strings[]) 
 {
     /* edit paths to point to directory containing files to be compiled */
-    char* cmd = "cd /home/andreas/Documents/makefs/c_test/; ls -R > files.txt";
+    char* cmd = "cd /home/andreas/Documents/makefs/one_file_test/; ls -R > files.txt";
     system(cmd);
 
     /* open file for reading */
-    FILE* input_text = fopen ("/home/andreas/Documents/makefs/c_test/files.txt", "r");
+    FILE* input_text = fopen ("/home/andreas/Documents/makefs/one_file_test/files.txt", "r");
     
     /* open file for writing */
-    FILE* makefile = fopen("/home/andreas/Documents/makefs/c_test/Makefile", "w");
+    FILE* makefile = fopen("/home/andreas/Documents/makefs/one_file_test/Makefile", "w");
 
     if (input_text == NULL)
     {
@@ -106,7 +106,8 @@ int main(int num_args, char* arg_strings[])
             fprintf(makefile, "\n%s", total_cflags);
         }
 
-        if (num_files > 1)
+        /* files.txt contains .:, files.txt, and filename.c/cpp */
+        if (num_files > 3)
         {
             fprintf(makefile, "\nDEPS =");
         }
@@ -163,7 +164,7 @@ int main(int num_args, char* arg_strings[])
     fclose(makefile);
 
     /* execute make and get "runnable" executable in directory */
-    cmd = "cd /home/andreas/Documents/makefs/c_test; make";
+    cmd = "cd /home/andreas/Documents/makefs/one_file_test; make";
     system(cmd);
 
     return 0;
