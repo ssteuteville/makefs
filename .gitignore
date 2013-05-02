@@ -1,2 +1,10 @@
-*.out
+# Object files
 *.o
+
+# Executables
+*.out
+runnable
+
+# Misc
+files.txt
+Makefile
