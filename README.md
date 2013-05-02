@@ -1,23 +1,15 @@
 makefs
 ======
 
-A FUSE file system that will create your makefiles for you!!!!
+A FUSE-based file system to essentially generate a Makefile based on the files of a specified directory. 
 
-In the intial phases of design. This is our first file system so we are figuring out what will be necessary to make
-make this work.
+##As of now:
+To generate a working Makefile:
 
-QUESTIONS WE NEED TO ANSWER
-====================================
-Are we going to have the fs create the makefiles as we create new files?
-OR
-Are we going generate the makefiles on command? 
+    1) edit the paths in driver_cmd_args.c (several places) to point to the directory containing the to-be-compiled files
+    2) gcc driver_cmd_args.c
+    3) ./a.out <desired CFLAGS> (no error checking so spell them correctly)
+    
+Can compile using g++/gcc. The driver parses through a generated text file (executing ls -R > files.txt and then reading from it) containing the list of files in the directory, and the first .c/.cpp read determines whether CC = gcc or g++. make is executed at the end of the driver’s run and an executable called, “runnable,” is placed in the directory.
 
-How are we going to get the directory name and file names from the system?
-  Which fuse functions?
-
-IDEAS
-======================================
-The makefiles could be hidden
-We could over load "touch" to update the makefile.
-  Adam's idea: 'touch make.o.g.Pendantic' would make an executable using the compiler command -o -g -Pendantic
-  
+FUSE has yet to be associated with this beauty.
