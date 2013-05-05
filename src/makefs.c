@@ -14,22 +14,39 @@
 #include <sys/types.h>
 #include <sys/xattr.h>
 
+static void makefs_realpath(char rpath[PATH_MAX], const char* path)
+{
+	strcpy(rpath, MAKE_DATA->root_dir);
+	strncat(rpath, path, PATH_MAX);
+
+
+}
+static int makefs_error()
+{
+	int retval = -errno;
+	return retval;
+}
+
 int makefs_getattr(const char *path, struct stat *statbuf)
 {
 	int retval = 0;
+	char rpath[PATH_MAX];
 	printf("Entered getattr\n");
-	retval = lstat(path, statbuf);
+	makefs_realpath(rpath, path);
+	retval = lstat(rpath, statbuf);
 
 	return retval;
 }
 
 int makefs_readlink(const char *path, char *link, size_t size)
 {
-	printf("Entered readlink");
+	printf("Entered readlink\n");
 	int retval = 0;
-	retval = readlink(path, link, size -1);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = readlink(rpath, link, size -1);
 	if(retval < 0)
-		return EXIT_FAILURE;
+		return -EXIT_FAILURE;
 	else
 	{
 		link[retval] = "\0";
@@ -40,9 +57,11 @@ int makefs_readlink(const char *path, char *link, size_t size)
 
 int makefs_mknod(const char *path, mode_t mode, dev_t dev)
 {
-	printf("Entered mknod");
+	printf("Entered mknod\n");
 	int retval = 0;
-	retval = mknod(path, mode, dev);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = mknod(rpath, mode, dev);
 	return retval;	
 }
 
@@ -50,16 +69,20 @@ int makefs_mkdir(const char *path, mode_t mode)
 {
 	printf("Entered mkdir");
 	int retval = 0;
-	retval = mkdir(path, mode);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = mkdir(rpath, mode);
 	return retval;
 	
 }
 
 int makefs_unlink(const char *path)
 {
-	printf("Entered unlink");
+	printf("Entered unlink\n");
 	int retval = 0;
-	retval = unlink(path);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = unlink(rpath);
 	return retval;
 }
 
@@ -67,81 +90,103 @@ int makefs_rmdir(const char *path)
 {
 	printf("Entered rmdir");
 	int retval = 0;
-	retval = rmdir(path);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = rmdir(rpath);
 	return retval;
 }
 
 int makefs_symlink(const char *path, const char *link)
 {
-	printf("Entered symlink");
+	printf("Entered symlink\n");
 	int retval = 0;
-	retval = symlink(path, link);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = symlink(rpath, link);
 	return retval;
 }
 
 int makefs_rename(const char *path, const char *newpath)
 {
-	printf("Entered rename");
+	printf("Entered rename\n");
 	int retval = 0;
-	retval = rename(path, newpath);
+	char rpath[PATH_MAX];
+	char rnewpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	makefs_realpath(rnewpath, newpath);
+	retval = rename(rpath, rnewpath);
 	return retval;
 }
 
 int makefs_link(const char *path, const char *newpath)
 {
-	printf("Entered link");
+	printf("Entered link\n");
 	int retval = 0;
-	retval = link(path, newpath);
+	char rpath[PATH_MAX];
+	char rnewpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	makefs_realpath(rnewpath, newpath);
+	retval = link(rpath, rnewpath);
 	return retval;
 }
 
 int makefs_chmod(const char *path, mode_t mode)
 {
-	printf("Entered chmod");
+	printf("Entered chmod\n");
 	int retval = 0;
-	retval = chmod(path, mode);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = chmod(rpath, mode);
 	return retval;
 }
 
 int makefs_chown(const char *path, uid_t uid, gid_t gid)
 {
-	printf("Entered chown");
+	printf("Entered chown\n");
 	int retval = 0;
-	retval = chown(path, uid, gid);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = chown(rpath, uid, gid);
 	return retval;
 }
 
 int makefs_truncate(const char *path, off_t newsize)
 {
-	printf("Entered truncate");
+	printf("Entered truncate\n");
 	int retval = 0;
-	retval = truncate(path, newsize);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = truncate(rpath, newsize);
 	return retval;
 }
 
 int makefs_utime(const char *path, struct utimbuf *ubuf)
 {
-	printf("Entered utime");
+	printf("Entered utime\n");
 	int retval = 0;
-	retval = utime(path, ubuf);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);	
+	retval = utime(rpath, ubuf);
 	return retval;
 }
 
 int makefs_open(const char *path, struct fuse_file_info *fi)
 {
-	printf("Entered open");
+	printf("Entered open\n");
 	int retval = 0;
 	int fd;
-	fd = open(path, fi->flags);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	fd = open(rpath, fi->flags);
 	fi->fh = fd;
 	if(fd < -1)
-		retval = fd;
+		retval = makefs_error();
 	return retval;
 }
 
 int makefs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-	printf("Entered read");
+	printf("Entered read\n");
 	int retval = 0;
 	retval = pread(fi->fh, buf, size, offset);
 	return retval;
@@ -150,7 +195,7 @@ int makefs_read(const char *path, char *buf, size_t size, off_t offset, struct f
 int makefs_write(const char *path, const char *buf, size_t size, off_t offset,
 	     struct fuse_file_info *fi)
 {
-	printf("Entered write");
+	printf("Entered write\n");
 	int retval = 0;
 	retval = pwrite(fi->fh, buf, size, offset);
 	return retval;
@@ -159,21 +204,23 @@ int makefs_write(const char *path, const char *buf, size_t size, off_t offset,
 
 int makefs_statfs(const char *path, struct statvfs *statv)
 {
-	printf("Entered statfs");
+	printf("Entered statfs\n");
 	int retval = 0;
-	retval = statvfs(path, statv);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = statvfs(rpath, statv);
 	return retval;
 }
 
 int makefs_flush(const char *path, struct fuse_file_info *fi)
 {	
-	printf("Entered flush");
+	printf("Entered flush\n");
 	return 0; //Didn't see any reason to implement this right now.
 }
 
 int makefs_release(const char *path, struct fuse_file_info *fi)
 {
-	printf("Entered release");
+	printf("Entered release\n");
 	int retval = 0;
 	retval = close(fi->fh);
 	return retval;
@@ -181,7 +228,7 @@ int makefs_release(const char *path, struct fuse_file_info *fi)
 
 int makefs_fsync(const char *path, int datasync, struct fuse_file_info *fi)
 {
-	printf("Entered fsync");
+	printf("Entered fsync\n");
 	int retval = 0;
 	if(datasync)
 		retval = fdatasync(fi->fh);
@@ -192,42 +239,52 @@ int makefs_fsync(const char *path, int datasync, struct fuse_file_info *fi)
 
 int makefs_setxattr(const char *path, const char *name, const char *value, size_t size, int flags)
 {
-	printf("Entered setxattr");
+	printf("Entered setxattr\n");
 	int retval = 0;
-	retval = lsetxattr(path, name, value, size, flags);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = lsetxattr(rpath, name, value, size, flags);
 	return retval;
 }
 
 int makefs_getxattr(const char *path, const char *name, char *value, size_t size)
 {
-	printf("Entered getxattr");
+	printf("Entered getxattr\n");
 	int retval = 0;
-	retval = lgetxattr(path, name, value, size);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = lgetxattr(rpath, name, value, size);
 	return retval;
 }
 
 int makefs_listxattr(const char *path, char *list, size_t size)
 {
-	printf("Entered listxattr");
+	printf("Entered listxattr\n");
 	int retval = 0;
-	retval = llistxattr(path, list, size);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = llistxattr(rpath, list, size);
 	return retval;
 }
 
 int makefs_removexattr(const char *path, const char *name)
 {
-	printf("Entered removexattr");
+	printf("Entered removexattr\n");
 	int retval = 0;
-	retval = lremovexattr(path, name);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = lremovexattr(rpath, name);
 	return retval;
 }
 
 int makefs_opendir(const char *path, struct fuse_file_info *fi)
 {
-	printf("Entered opendir");
+	printf("Entered opendir\n");
 	DIR *dp;
 	int retval = 0;
-	dp = opendir(path);//use open dir to get file handle
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	dp = opendir(rpath);//use open dir to get file handle
 	fi->fh = dp; //set fi's file handler to dp
 	return retval;
 }
@@ -235,7 +292,7 @@ int makefs_opendir(const char *path, struct fuse_file_info *fi)
 int makefs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
 	       struct fuse_file_info *fi)
 {
-	printf("Entered readdir");
+	printf("Entered readdir\n");
 	DIR *dp;
 	int retval = 0;
 	struct dirent *de;
@@ -261,7 +318,7 @@ int makefs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t of
 
 int makefs_releasedir(const char *path, struct fuse_file_info *fi)
 {
-	printf("Entered releasedir");
+	printf("Entered releasedir\n");
 	int retval = 0;
 	closedir((DIR *)(uintptr_t) fi->fh);
 	return retval;
@@ -269,44 +326,48 @@ int makefs_releasedir(const char *path, struct fuse_file_info *fi)
 
 int makefs_fsyncdir(const char *path, int datasync, struct fuse_file_info *fi)
 {
-	printf("Entered fsyncdir");
+	printf("Entered fsyncdir\n");
 	return 0;// didn't seem necessarry yet.
 }
 
 void* makefs_init(struct fuse_conn_info *conn)
 {
-	printf("Entered init");
+	printf("Entered init\n");
 	return MAKE_DATA;	
 }
 
 void makefs_destroy(void *userdata)
 {
-	printf("Entered destroy");
+	printf("Entered destroy\n");
 }
 
 int makefs_access(const char *path, int mask)
 {
-	printf("Entered access");
+	printf("Entered access\n");
 	int retval = 0;
-	retval = access(path, mask);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	retval = access(rpath, mask);
 	return retval;
 }
 
 int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
-	printf("Entered create");
+	printf("Entered create\n");
 	int retval = 0;
 	int fd;
-	fd = create(path, mode);
+	char rpath[PATH_MAX];
+	makefs_realpath(rpath, path);
+	fd = creat(rpath, mode);
 	if(fd < 0)
-		retval = -1;
+		retval = makefs_error();
 	fi->fh = fd;
 	return retval;
 }
 
 int makefs_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
 {
-	printf("Entered ftruncate");
+	printf("Entered ftruncate\n");
 	int retval = 0;
 	retval = ftruncate(fi->fh, offset);
 	return retval;	
@@ -314,49 +375,49 @@ int makefs_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
 
 int makefs_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_info *fi)
 {
-	printf("Entered fgetattr");
+	printf("Entered fgetattr\n");
 	int retval = 0;
 	retval = fstat(fi->fh, statbuf);
 	return retval;
 }
 
 struct fuse_operations make_oper = {
-  .getattr = make_getattr,
-  .readlink = make_readlink,
+  .getattr = makefs_getattr,
+  .readlink = makefs_readlink,
   // no .getdir -- that's deprecated
   .getdir = NULL,
-  .mknod = make_mknod,
-  .mkdir = make_mkdir,
-  .unlink = make_unlink,
-  .rmdir = make_rmdir,
-  .symlink = make_symlink,
-  .rename = make_rename,
-  .link = make_link,
-  .chmod = make_chmod,
-  .chown = make_chown,
-  .truncate = make_truncate,
-  .utime = make_utime,
-  .open = make_open,
-  .read = make_read,
-  .write = make_write,
-  .statfs = make_statfs,
-  .flush = make_flush,
-  .release = make_release,
-  .fsync = make_fsync,
-  .setxattr = make_setxattr,
-  .getxattr = make_getxattr,
-  .listxattr = make_listxattr,
-  .removexattr = make_removexattr,
-  .opendir = make_opendir,
-  .readdir = make_readdir,
-  .releasedir = make_releasedir,
-  .fsyncdir = make_fsyncdir,
-  .init = make_init,
-  .destroy = make_destroy,
-  .access = make_access,
-  .create = make_create,
-  .ftruncate = make_ftruncate,
-  .fgetattr = make_fgetattr
+  .mknod = makefs_mknod,
+  .mkdir = makefs_mkdir,
+  .unlink = makefs_unlink,
+  .rmdir = makefs_rmdir,
+  .symlink = makefs_symlink,
+  .rename = makefs_rename,
+  .link = makefs_link,
+  .chmod = makefs_chmod,
+  .chown = makefs_chown,
+  .truncate = makefs_truncate,
+  .utime = makefs_utime,
+  .open = makefs_open,
+  .read = makefs_read,
+  .write = makefs_write,
+  .statfs = makefs_statfs,
+  .flush = makefs_flush,
+  .release = makefs_release,
+  .fsync = makefs_fsync,
+  .setxattr = makefs_setxattr,
+  .getxattr = makefs_getxattr,
+  .listxattr = makefs_listxattr,
+  .removexattr = makefs_removexattr,
+  .opendir = makefs_opendir,
+  .readdir = makefs_readdir,
+  .releasedir = makefs_releasedir,
+  .fsyncdir = makefs_fsyncdir,
+  .init = makefs_init,
+  .destroy = makefs_destroy,
+  .access = makefs_access,
+  .create = makefs_create,
+  .ftruncate = makefs_ftruncate,
+  .fgetattr = makefs_fgetattr
 };
 
 void makefs_usage()
@@ -397,4 +458,5 @@ int main(int argc, char* argv[])
 	fprintf(stderr, "About to call fuse main\n");
 	fuse_stat = fuse_main(argc, argv, &make_oper, make_data);
 	fprintf(stderr, "Returned from fuse main. Return value: %d\n", fuse_stat);
+	return fuse_stat;
 }
