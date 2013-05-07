@@ -70,7 +70,17 @@ int makefs_mkdir(const char *path, mode_t mode)
 	printf("Entered mkdir");
 	int retval = 0;
 	char rpath[PATH_MAX];
+	const char* files_path = ".files.txt";
+	char* rfiles_path = "";
+	makefs_realpath(rfiles_path, files_path);
+	printf("%s", rfiles_path);
+	printf("about to open new file\n");
+	FILE* meta = fopen(rfiles_path,"w");
 	makefs_realpath(rpath, path);
+	printf("about to write to file");
+	fprintf(meta,"%s", rpath);
+	printf("about to close file\n");
+	fclose(meta);
 	retval = mkdir(rpath, mode);
 	return retval;
 	
