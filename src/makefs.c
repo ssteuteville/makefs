@@ -34,10 +34,10 @@ int makefs_getattr(const char *path, struct stat *statbuf)
 	printf("Entered getattr\n");
 	makefs_realpath(rpath, path);
 	retval = lstat(rpath, statbuf);
-
+	if(retval == -1)
+		retval = -errno;
 	return retval;
 }
-
 int makefs_readlink(const char *path, char *link, size_t size)
 {
 	printf("Entered readlink\n");
