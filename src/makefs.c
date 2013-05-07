@@ -429,7 +429,13 @@ void makefs_usage()
 int main(int argc, char* argv[])
 {
 	int fuse_stat;
-	struct make_state *make_data;
+	struct make_state *make_data = malloc(sizeof(struct make_state));
+	
+	if(make_data == NULL)
+	{
+		perror("Problem allocating space for make_data");
+		abort();
+	}
 
 	if((getuid() == 0) || (geteuid() == 0))
 	{
@@ -444,18 +450,13 @@ int main(int argc, char* argv[])
 		makefs_usage();
 	}
 
-	make_data = malloc(sizeof(struct make_state));
-	if(make_data == NULL)
-	{
-		perror("Problem allocating space for make_data");
-		abort();
-	}
+	make_data->root_dir = realpath(argv[argc-2], NULL);
 
-	make_data->root_dir = argv[argc-2];
 	argv[argc-2] = argv[argc - 1];
-	argc--;
+	argc--;//take root_dir out of arguments before passing to fuse_main
 
 	fprintf(stderr, "About to call fuse main\n");
+
 	fuse_stat = fuse_main(argc, argv, &make_oper, make_data);
 	fprintf(stderr, "Returned from fuse main. Return value: %d\n", fuse_stat);
 	return fuse_stat;
