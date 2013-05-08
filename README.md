@@ -23,5 +23,8 @@ USAGE: ./makefs [FUSE and MOUNT options] root_directory mountpoint:
     3) ./makefs -f root_dir mount_dir
     5) open a new termminal window and start using the new filesystem. As you cause system calls
        to happen the first terminal will be notifying you.
+       
+So far the only added functionality is that a file named .files.txt will be added to every directy made using mkdir.
+This file will eventually be used for meta data bout what kind of files are in the directory.
     
 
