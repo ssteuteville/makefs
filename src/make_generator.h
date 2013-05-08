@@ -6,7 +6,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-bool correct_type(char* meta_data, char* filename);
-void add_meta(char* meta_data, char* filename); 
+bool correct_type(char* meta_path, char* file_path);
+void add_meta(char* meta_path, char* file_path); 
+char* get_meta_path(char* new_file_path);
 
 #endif
