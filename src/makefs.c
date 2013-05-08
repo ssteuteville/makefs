@@ -72,15 +72,12 @@ int makefs_mkdir(const char *path, mode_t mode)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = mkdir(rpath, mode);
-
+	//Add the meta-data to directory
 	char* file_path = "/.files.txt";
 	strncat(rpath, file_path, PATH_MAX); 
 	FILE* meta = fopen(rpath, "w");
 	fprintf(meta, path);
 	fclose(meta);
-
-
-
 	return retval;
 	
 }
@@ -362,10 +359,12 @@ int makefs_access(const char *path, int mask)
 
 int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
-	printf("Entered create\n");
+	printf("Entered create, path was %s\n", path);
 	int retval = 0;
 	int fd;
 	char rpath[PATH_MAX];
+		if(strcmp(path, "/Makefile") == 0)
+		printf("Makefile was created\n");
 	makefs_realpath(rpath, path);
 	fd = creat(rpath, mode);
 	if(fd < 0)
