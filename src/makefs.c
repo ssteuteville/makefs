@@ -1,4 +1,5 @@
 #include "parameters.h"
+#include "make_generator.h"
 
 #include <ctype.h>
 #include <dirent.h>
@@ -364,15 +365,44 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	int fd;
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
-	if(strcmp(path, "/Makefile") == 0)//add options for flags??
-		printf("Makefile was created\n");
+	if (strstr(path, "/Makefile") != NULL)
+	{
+		char* filename = strrchr(path, '/');
+		printf("Makefile needs to be created here\n");
+	}
+
+	/* parse through meta-data to check if this is a C/CPP project,
+	   i.e. if inserting a .c into a CPP project, throw error 
+
+	   bool correct_type(char* meta_data, char* filename)
+	   void add_meta(char* filename) 
+	*/
+
+	/* if a .c file */
 	else if (path[strlen(path) - 1] == 'c' && path[strlen(path) - 2] == '.')
 	{
 		char meta_path[PATH_MAX] = "";
-		strncat(meta_path, rpath, PATH_MAX);// before this cancatanate we need to remove
-											// the file name from the end of the path
-		strncat(meta_path, "/.files.txt", PATH_MAX);//GET THE CORRECT PATH FOR THE META DATA
-		printf("meta file path: %s\n", meta_path);//as of now this is incorrect
+		strncat(meta_path, MAKE_DATA->root_dir, PATH_MAX);																	
+		printf("meta-file path: %s\n", meta_path);					
+
+		/* Add new file to the meta-data file in directory */
+		char* file_path = "/.files.txt";
+		strncat(meta_path, file_path, PATH_MAX); 
+		printf("Opening meta-data file: %s\n", meta_path);
+		
+		/* append to end of files.txt (should already exist) */
+		FILE* meta = fopen(meta_path, "a");
+
+		/* remove / from beginning of file */
+		if (path[0] == '/')
+		{
+			memmove(path, path+1, strlen(path));
+		}
+		fprintf(meta, path);
+		fprintf(meta, "\n");
+		printf("%s\n", path);
+		fclose(meta);
+
 
 		//parse path from dir/dir/file.c to file.c    
 			//note: there could be lots of dir/dir/dir
@@ -382,6 +412,7 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 		//NOTE: we should use functions to modularize this
 
 	}
+	/* if a .cpp file */
 	else if(path[strlen(path) - 1] == 'p' && path[strlen(path) - 2] == 'p' 
 			&& path[strlen(path) - 3] == 'c' && path[strlen(path) - 4] == '.')
 	{
