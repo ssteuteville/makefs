@@ -363,9 +363,42 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	int retval = 0;
 	int fd;
 	char rpath[PATH_MAX];
-		if(strcmp(path, "/Makefile") == 0)
-		printf("Makefile was created\n");
 	makefs_realpath(rpath, path);
+	if(strcmp(path, "/Makefile") == 0)//add options for flags??
+		printf("Makefile was created\n");
+	else if (path[strlen(path) - 1] == 'c' && path[strlen(path) - 2] == '.')
+	{
+		char meta_path[PATH_MAX] = "";
+		strncat(meta_path, rpath, PATH_MAX);// before this cancatanate we need to remove
+											// the file name from the end of the path
+		strncat(meta_path, "/.files.txt", PATH_MAX);//GET THE CORRECT PATH FOR THE META DATA
+		printf("meta file path: %s\n", meta_path);//as of now this is incorrect
+
+		//parse path from dir/dir/file.c to file.c    
+			//note: there could be lots of dir/dir/dir
+		//open the file at meta_path
+		//write to the file
+		//close the file
+		//NOTE: we should use functions to modularize this
+
+	}
+	else if(path[strlen(path) - 1] == 'p' && path[strlen(path) - 2] == 'p' 
+			&& path[strlen(path) - 3] == 'c' && path[strlen(path) - 4] == '.')
+	{
+
+		char meta_path[PATH_MAX] = "";
+		strncat(meta_path, rpath, PATH_MAX);// before this cancatanate we need to remove
+											// the file name from the end of the path
+		strncat(meta_path, "/.files.txt", PATH_MAX);//GET THE CORRECT PATH FOR THE META DATA
+		printf("meta file path: %s\n", meta_path);//As of now this is incorrect
+
+		//use the stubs from the case above but for a .cpp file.
+		//NOTE: we should use functions to modularize this
+
+	}
+
+
+
 	fd = creat(rpath, mode);
 	if(fd < 0)
 		retval = makefs_error();
