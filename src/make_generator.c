@@ -71,18 +71,19 @@ char* get_meta_path(char* new_file_path)
 
 }
 
-void make_gen(char* file_path, char* meta_path)
+bool make_gen(char* file_path, char* meta_path)
 {
     int i = 0;
     //First we will set up the cflags
     char* cflags_init = strrchr(file_path, '/');//format: /makefile.flag.flag1.flag2
-    cflags_init = strchr(cflags, '.');//format: .flag.flag1.flag2
+    cflags_init = strchr(cflags_init, '.');//format: .flag.flag1.flag2
     char* cflags = "CFLAGS = ";
     cflags_init++;
+    bool noflags = false;
     if(cflags_init != NULL)//if the user wants flags
     {
         if(strcmp(cflags_init, "allf" ) == 0)//if all flags was chosen
-            strncat(cflags, "-g -Wall -pedantic -O2 -Wextra") // append all flag options
+            strcat(cflags, "-g -Wall -pedantic -O2 -Wextra"); // append all flag options
         else//if the user chose specific flags
         {
             i = 0;
@@ -96,8 +97,10 @@ void make_gen(char* file_path, char* meta_path)
             }   
         }
     }//CFLAGS updated fully
+    else
+        noflags = true;
 
-    //Now we will read the file names from the meta data file
+    //Now we will read the file names from the meta data file and determine a compiler
     FILE* meta = fopen(meta_path, 'r');
     char* compiler = "CC = ";
     char files[max_files][PATH_MAX] = {NULL};
@@ -127,7 +130,60 @@ void make_gen(char* file_path, char* meta_path)
         }
         i++;
     }
+    fclose(meta);
+    char* runnable = files[0];
+    runnable++;
+    //All meta data has been loaded into memory and the compiler has been determined
 
+    
+    
+    //Now we will build a string to represent all of the object files
+    //and build a string to represent all of the dependents. AKA .h's
+    char* deps = "DEPS = ";
+    char* objects = "OBJ = ";
+    i = 1; //don't start at zero because this is the name of the directory not a file
+    if(gcc = true)
+    {
+        while(i < strlen(files))
+        {
+            if(files[i][strlen(files[i]) -1] == 'h')
+                strcat(deps, files[i]);
 
+            files[i][strlen(files[i])-1] = 'o';//change the c to an o
+            strcat(objects, files[i]);//add to the object list
+        }
+    }
+    else if(gplusplus = true)
+    {
+        while(i < strlen(files))
+        {
+            if(files[i][strlen(files[i]) -1] == 'h')
+                strcat(deps, files[i]);
 
+            files[i][strlen(files[i])-1] = '\0';//remove a p
+            files[i][strlen(files[i])-1] = '\0';//remove a p
+            files[i][strlen(files[i])-1] = 'o';//change the c to an o
+            strcat(objects, files[i]);
+
+        }
+    }
+    char make_path[PATH_MAX] = {NULL};
+    char* temp = strrchr(file_path, '/'); //Format /Makefile.flag1.flag2....flagn
+    strncpy(make_path, file_path, strlen(file_path) - (strlen(temp)+8));//copy the path excluding flags.
+                                                                //the 8 here is the number of chars in "Makefile"
+    FILE* makefile = fopen(make_path, 'w');
+    fprintf(makefile, ".PHONY: clean");
+    fprintf(makefile, "\n%s", compiler);
+    if(noflags = false)
+        fprintf(makefile, "\n%s", cflags);
+    fprintf(makefile, "\n%s", objects);
+    fprintf(makefile, "\n%s", deps);
+    fprintf(makefile, "\n\n%%.o: %%.c $(DEPS)");
+    fprintf(makefile, "\n\t$(CC) -c -o $@ $< $(CFLAGS)");
+    fprintf(makefile, "\n\n%s: $(OBJ)", runnable);
+    fprintf(makefile, "\n\t$(CC) -o $@ $^ $(CFLAGS)");
+    fprintf(makefile, "\n\nclean:");
+    fprintf(makefile, "\n\trm -f %s $(OBJ)\n", runnable);
+    fclose(makefile);
+    return true;
 }

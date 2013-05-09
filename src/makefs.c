@@ -377,12 +377,12 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 		return retval;
 	}
 		
-	/*if (strstr(path, "/Makefile") != NULL)//if mMakefile is part of path name
+	if (strstr(path, "/Makefile") != NULL)//if mMakefile is part of path name
 	{
 
-		//make_gen(rpath, meta_path); //fill the new file with makefile text
+		if(make_gen(rpath, meta_path) == true); //fill the new file with makefile text
 		printf("Makefile created.\n");
-	}*/
+	}
 	char* temp = strrchr(rpath, '/');
 	printf("rpath = %s\n", rpath);
 	printf("temp = %s\n", temp);
