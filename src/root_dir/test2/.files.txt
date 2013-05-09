@@ -1,0 +1,6 @@
+/test2
+test.c
+test1.c
+test2.c
+file.txt
+file.out

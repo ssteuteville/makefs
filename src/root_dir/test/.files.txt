@@ -1,1 +1,7 @@
 /test
+test.c
+test1.c
+test2.c
+a.c
+a.txt
+a.out

@@ -70,15 +70,15 @@ int makefs_mkdir(const char *path, mode_t mode)
 {
 	printf("Entered mkdir");
 	int retval = 0;
-	char rpath[PATH_MAX];
+	char rpath[PATH_MAX] = {NULL};
 	makefs_realpath(rpath, path);
 	retval = mkdir(rpath, mode);
 	//Add the meta-data to directory
 	char* file_path = "/.files.txt";
 	strncat(rpath, file_path, PATH_MAX); 
 	FILE* meta = fopen(rpath, "w");
-	strncat(path, "\n", PATH_MAX);
 	fprintf(meta, path);
+	fprintf(meta, "\n");
 	fclose(meta);
 	return retval;
 	
@@ -386,13 +386,10 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	char* temp = strrchr(rpath, '/');
 	printf("rpath = %s\n", rpath);
 	printf("temp = %s\n", temp);
-	if(strcmp(temp, "/.files.txt") != 0)
+
+	if(correct_type(meta_path, rpath) == true)
 	{
-		puts("hi, baby");
-		if(correct_type(meta_path, rpath) == true)
-		{
-			add_meta(meta_path, rpath);
-		}
+		add_meta(meta_path, rpath);
 	}
 
 	/* parse through meta-data to check if this is a C/CPP project,
