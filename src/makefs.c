@@ -369,17 +369,20 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	char* meta_path = get_meta_path(rpath);//get the path to this directories metafile
 	printf("Meta path: %s\n", meta_path);
 	
+	printf("rpath before creation: %s\n", rpath);
 	fd = creat(rpath, mode);
+	printf("fd: %d\n", fd);
 	fi->fh = fd;
+	printf("fi->fh: %d\n", fi->fh);
 	if(fd < 0)
 	{
 		retval = makefs_error();
 		return retval;
 	}
-		
+	printf("about check if ""Makefile"" is a part of the path name\n");
 	if (strstr(path, "/Makefile") != NULL)//if mMakefile is part of path name
 	{
-
+		printf("going to call make_gen\n");
 		if(make_gen(rpath, meta_path) == true); //fill the new file with makefile text
 		printf("Makefile created.\n");
 	}

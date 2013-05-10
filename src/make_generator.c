@@ -73,15 +73,18 @@ char* get_meta_path(char* new_file_path)
 
 bool make_gen(char* file_path, char* meta_path)
 {
+    puts("In make_gen");
     int i = 0;
     //First we will set up the cflags
     char* cflags_init = strrchr(file_path, '/');//format: /makefile.flag.flag1.flag2
+    printf("cflags_init = %s\n", cflags_init);
     cflags_init = strchr(cflags_init, '.');//format: .flag.flag1.flag2
+    printf("cflags_init now = %s\n", cflags_init);
     char* cflags = "CFLAGS = ";
-    cflags_init++;
     bool noflags = false;
     if(cflags_init != NULL)//if the user wants flags
     {
+        cflags_init++;
         if(strcmp(cflags_init, "allf" ) == 0)//if all flags was chosen
             strcat(cflags, "-g -Wall -pedantic -O2 -Wextra"); // append all flag options
         else//if the user chose specific flags
@@ -97,11 +100,16 @@ bool make_gen(char* file_path, char* meta_path)
             }   
         }
     }//CFLAGS updated fully
-    else
+    else 
+    {
         noflags = true;
+        printf("No flags declared\n");
+    }
 
     //Now we will read the file names from the meta data file and determine a compiler
+    printf("About to open .files.txt located @ %s\n", meta_path);
     FILE* meta = fopen(meta_path, 'r');
+    printf("Meta is read (%s)\n", meta);
     char* compiler = "CC = ";
     char files[max_files][PATH_MAX] = {NULL};
     char file_name[PATH_MAX] = {NULL};
@@ -109,6 +117,7 @@ bool make_gen(char* file_path, char* meta_path)
     bool gcc = false;
     bool gplusplus = false;
     i = 0;
+    puts("About to loop through meta's files");
     while(fgets(file_name, PATH_MAX, meta) != NULL)
     {
         strcpy(files[i], file_name);
