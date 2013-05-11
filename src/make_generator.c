@@ -108,9 +108,10 @@ bool make_gen(char* file_path, char* meta_path)
 
     //Now we will read the file names from the meta data file and determine a compiler
     printf("About to open .files.txt located @ %s\n", meta_path);
-    FILE* meta = fopen(meta_path, 'r');
-    printf("Meta is read (%s)\n", meta);
-    char* compiler = "CC = ";
+    FILE* meta = fopen(meta_path, "r");
+    printf("Meta is open\n");
+    char compiler[PATH_MAX] = {NULL};
+    strncat(compiler, "CC = ", PATH_MAX);
     char files[max_files][PATH_MAX] = {NULL};
     char file_name[PATH_MAX] = {NULL};
     bool determine_compiler = false;
@@ -120,46 +121,66 @@ bool make_gen(char* file_path, char* meta_path)
     puts("About to loop through meta's files");
     while(fgets(file_name, PATH_MAX, meta) != NULL)
     {
+        printf("Just got into loop file_name: %s\n", file_name);
         strcpy(files[i], file_name);
         files[i][strlen(files[i])-1] = '\0';
         if(determine_compiler == false)
         {
+            puts("Checking compiler type");
             if(files[i][strlen(files[i]) - 1] == 'c')
             {
-                strcat(compiler, "gcc");
+                puts("setting compiler as gcc");
+                strncat(compiler, "gcc", PATH_MAX);
+                puts("compiler type set");
                 determine_compiler = true;
                 gcc = true;
             }
             else if(files[i][strlen(files[i]) - 1] == 'p')
             {
+                puts("setting compiler as g++");
                 strcat(compiler, "g++");
                 determine_compiler = true;
                 gplusplus = true;
+                puts("compiler type set");
             }
         }
         i++;
     }
+    printf("Made it out of loop\n");
     fclose(meta);
+    printf("Closed file\n");
     char* runnable = files[0];
     runnable++;
+    printf("Runnable name: %s", runnable);
     //All meta data has been loaded into memory and the compiler has been determined
 
     
     
     //Now we will build a string to represent all of the object files
     //and build a string to represent all of the dependents. AKA .h's
-    char* deps = "DEPS = ";
-    char* objects = "OBJ = ";
+    printf("Initializing deps\n");
+    char* deps[PATH_MAX];
+    strncat(deps, "DEPS = ", PATH_MAX);
+    printf("Initializing objects\n");
+    char* objects[PATH_MAX];
+    strncat(objects, "OBJ = ", PATH_MAX);
     i = 1; //don't start at zero because this is the name of the directory not a file
     if(gcc = true)
     {
+        printf("gcc = true\n");
         while(i < strlen(files))
         {
+            printf("Looping through files, current file name : %s\n", files[i]);
             if(files[i][strlen(files[i]) -1] == 'h')
                 strcat(deps, files[i]);
-
-            files[i][strlen(files[i])-1] = 'o';//change the c to an o
-            strcat(objects, files[i]);//add to the object list
+            if(strlen(files[i]) >2)
+            {
+                printf("made it into if\n");
+                files[i][strlen(files[i])-1] = 'o';//change the c to an o
+                strcat(objects, files[i]);//add to the object list  
+                strncat(objects, " ", 1);          
+            }
+            i++;
         }
     }
     else if(gplusplus = true)
@@ -168,29 +189,36 @@ bool make_gen(char* file_path, char* meta_path)
         {
             if(files[i][strlen(files[i]) -1] == 'h')
                 strcat(deps, files[i]);
-
-            files[i][strlen(files[i])-1] = '\0';//remove a p
-            files[i][strlen(files[i])-1] = '\0';//remove a p
-            files[i][strlen(files[i])-1] = 'o';//change the c to an o
-            strcat(objects, files[i]);
-
+            if(strlen(files[i]) > 4)
+            {
+                files[i][strlen(files[i])-1] = '\0';//remove a p
+                files[i][strlen(files[i])-1] = '\0';//remove a p
+                files[i][strlen(files[i])-1] = 'o';//change the c to an o
+                strcat(objects, files[i]);
+                strncat(objects, " ", 1);
+            }
+            i++;
         }
     }
+    printf("Made it out of file loading\n");
     char make_path[PATH_MAX] = {NULL};
     char* temp = strrchr(file_path, '/'); //Format /Makefile.flag1.flag2....flagn
-    strncpy(make_path, file_path, strlen(file_path) - (strlen(temp)+8));//copy the path excluding flags.
+    printf("file path = %s temp = %s\n", file_path, temp);
+    strncpy(make_path, file_path, (strlen(file_path) - (strlen(temp))+9));//copy the path excluding flags.
                                                                 //the 8 here is the number of chars in "Makefile"
-    FILE* makefile = fopen(make_path, 'w');
+    printf("make_path = %s\n", make_path);
+    FILE* makefile = fopen(make_path, "a");
     fprintf(makefile, ".PHONY: clean");
     fprintf(makefile, "\n%s", compiler);
     if(noflags = false)
         fprintf(makefile, "\n%s", cflags);
     fprintf(makefile, "\n%s", objects);
-    fprintf(makefile, "\n%s", deps);
-    fprintf(makefile, "\n\n%%.o: %%.c $(DEPS)");
-    fprintf(makefile, "\n\t$(CC) -c -o $@ $< $(CFLAGS)");
+    if(strcmp(deps, "DEPS = ") != 0)
+        fprintf(makefile, "\n%s", deps);
+    fprintf(makefile, "\n\n%%.o: %%.c $(DEPS)");//need to add if statement for dep
+    fprintf(makefile, "\n\t$(CC) -c -o $@ $< $(CFLAGS)");//need to add if statement for cflags
     fprintf(makefile, "\n\n%s: $(OBJ)", runnable);
-    fprintf(makefile, "\n\t$(CC) -o $@ $^ $(CFLAGS)");
+    fprintf(makefile, "\n\t$(CC) -o $@ $^ $(CFLAGS)");//need to add if statement for cflag
     fprintf(makefile, "\n\nclean:");
     fprintf(makefile, "\n\trm -f %s $(OBJ)\n", runnable);
     fclose(makefile);

@@ -370,7 +370,7 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	printf("Meta path: %s\n", meta_path);
 	
 	printf("rpath before creation: %s\n", rpath);
-	fd = creat(rpath, mode);
+	fd = creat(rpath, mode);//this can't be here. It needs to go within the cases below
 	printf("fd: %d\n", fd);
 	fi->fh = fd;
 	printf("fi->fh: %d\n", fi->fh);
@@ -382,25 +382,19 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	printf("about check if ""Makefile"" is a part of the path name\n");
 	if (strstr(path, "/Makefile") != NULL)//if mMakefile is part of path name
 	{
+		//here we need to strip off all of the flags and call creat on make_path.
 		printf("going to call make_gen\n");
 		if(make_gen(rpath, meta_path) == true); //fill the new file with makefile text
 		printf("Makefile created.\n");
 	}
-	char* temp = strrchr(rpath, '/');
-	printf("rpath = %s\n", rpath);
-	printf("temp = %s\n", temp);
-
-	if(correct_type(meta_path, rpath) == true)
+	else if(correct_type(meta_path, rpath) == true)
 	{
+		//here we need to call creat on rpath
 		add_meta(meta_path, rpath);
 	}
+	/*else
+		fd = creat*/
 
-	/* parse through meta-data to check if this is a C/CPP project,
-	   i.e. if inserting a .c into a CPP project, throw error 
-
-	   bool correct_type(char* meta_data, char* filename)
-	   void add_meta(char* filename) 
-	*/
 	return retval;
 }
 
