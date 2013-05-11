@@ -24,6 +24,12 @@ USAGE: ./makefs [FUSE and MOUNT options] root_directory mountpoint:
     5) open a new termminal window and start using the new filesystem. As you cause system calls
        to happen the first terminal will be notifying you.
        
-So far the only added functionality is that a file named .files.txt will be added to every directory made using mkdir.
-This file will eventually be used for meta data bout what kind of files are in the directory.
+So far, a file named .files.txt will be added to every directory made using mkdir.
+Everytime you create a new file (aka touch a.c) if it ends in the extension .c, .cpp, or .h it's
+filename is added to .files.txt. 
+IMPORTANT NOTE: the first ".c" or ".cpp" found in .files.txt determines
+the project type (c or cpp). So only files that match that type (or h files) will be added to meta data.
 
+To create a makefile type "touch Makefile" within a dir that contains .files.txt.
+KNOWN BUG: something is wrong with makefs_create and executables aren't able to be made when you type "make."
+We are working on it.
