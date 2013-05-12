@@ -134,6 +134,7 @@ bool make_gen(char* file_path, char* meta_path)
     }
 
     //Now we will read the file names from the meta data file and determine a compiler
+    meta_path = get_meta_path(meta_path);//for some reason meta path kept getting messed up here.
     printf("%s\n", meta_path);
     FILE* meta = fopen(meta_path, "r");
     char compiler[PATH_MAX] = {NULL};
@@ -146,7 +147,6 @@ bool make_gen(char* file_path, char* meta_path)
     i = 0;
     char* deps[PATH_MAX] = {'\0'};
     strncat(deps, "DEPS = ", PATH_MAX);
-
     puts("About to loop through meta's files");
     while(fgets(file_name, PATH_MAX, meta) != NULL)
     {

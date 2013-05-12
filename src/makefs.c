@@ -36,7 +36,7 @@ int makefs_getattr(const char *path, struct stat *statbuf)
 	makefs_realpath(rpath, path);
 	retval = lstat(rpath, statbuf);
 	if(retval == -1)
-		retval = -errno;
+		retval = makefs_error();
 	return retval;
 }
 int makefs_readlink(const char *path, char *link, size_t size)
@@ -47,7 +47,7 @@ int makefs_readlink(const char *path, char *link, size_t size)
 	makefs_realpath(rpath, path);
 	retval = readlink(rpath, link, size -1);
 	if(retval < 0)
-		return -EXIT_FAILURE;
+		retval = makefs_error();
 	else
 	{
 		link[retval] = "\0";
@@ -63,6 +63,8 @@ int makefs_mknod(const char *path, mode_t mode, dev_t dev)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = mknod(rpath, mode, dev);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;	
 }
 
@@ -80,6 +82,8 @@ int makefs_mkdir(const char *path, mode_t mode)
 	fprintf(meta, path);
 	fprintf(meta, "\n");
 	fclose(meta);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 	
 }
@@ -91,6 +95,8 @@ int makefs_unlink(const char *path)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = unlink(rpath);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -101,6 +107,8 @@ int makefs_rmdir(const char *path)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = rmdir(rpath);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -111,6 +119,8 @@ int makefs_symlink(const char *path, const char *link)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = symlink(rpath, link);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -123,6 +133,8 @@ int makefs_rename(const char *path, const char *newpath)
 	makefs_realpath(rpath, path);
 	makefs_realpath(rnewpath, newpath);
 	retval = rename(rpath, rnewpath);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -135,6 +147,8 @@ int makefs_link(const char *path, const char *newpath)
 	makefs_realpath(rpath, path);
 	makefs_realpath(rnewpath, newpath);
 	retval = link(rpath, rnewpath);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -145,6 +159,8 @@ int makefs_chmod(const char *path, mode_t mode)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = chmod(rpath, mode);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -155,6 +171,8 @@ int makefs_chown(const char *path, uid_t uid, gid_t gid)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = chown(rpath, uid, gid);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -165,6 +183,8 @@ int makefs_truncate(const char *path, off_t newsize)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = truncate(rpath, newsize);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -175,6 +195,8 @@ int makefs_utime(const char *path, struct utimbuf *ubuf)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);	
 	retval = utime(rpath, ubuf);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -187,7 +209,7 @@ int makefs_open(const char *path, struct fuse_file_info *fi)
 	makefs_realpath(rpath, path);
 	fd = open(rpath, fi->flags);
 	fi->fh = fd;
-	if(fd < -1)
+	if(fd < 0)
 		retval = makefs_error();
 	return retval;
 }
@@ -197,6 +219,8 @@ int makefs_read(const char *path, char *buf, size_t size, off_t offset, struct f
 	printf("Entered read\n");
 	int retval = 0;
 	retval = pread(fi->fh, buf, size, offset);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -206,6 +230,8 @@ int makefs_write(const char *path, const char *buf, size_t size, off_t offset,
 	printf("Entered write\n");
 	int retval = 0;
 	retval = pwrite(fi->fh, buf, size, offset);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 	
 }
@@ -217,6 +243,8 @@ int makefs_statfs(const char *path, struct statvfs *statv)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = statvfs(rpath, statv);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -242,6 +270,9 @@ int makefs_fsync(const char *path, int datasync, struct fuse_file_info *fi)
 		retval = fdatasync(fi->fh);
 	else
 		retval = fsync(fi->fh);
+
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -252,6 +283,8 @@ int makefs_setxattr(const char *path, const char *name, const char *value, size_
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = lsetxattr(rpath, name, value, size, flags);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -262,6 +295,8 @@ int makefs_getxattr(const char *path, const char *name, char *value, size_t size
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = lgetxattr(rpath, name, value, size);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -272,6 +307,8 @@ int makefs_listxattr(const char *path, char *list, size_t size)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = llistxattr(rpath, list, size);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -282,6 +319,8 @@ int makefs_removexattr(const char *path, const char *name)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = lremovexattr(rpath, name);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -294,6 +333,8 @@ int makefs_opendir(const char *path, struct fuse_file_info *fi)
 	makefs_realpath(rpath, path);
 	dp = opendir(rpath);//use open dir to get file handle
 	fi->fh = dp; //set fi's file handler to dp
+	if(dp == NULL)
+		retval = makefs_error();
 	return retval;
 }
 
@@ -309,7 +350,7 @@ int makefs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t of
 	de = readdir(dp);//set de to readdir's return value. 0 == error.
 	if( de == 0)//error checking
 	{
-		retval = -1;
+		retval = makefs_error();
 		return retval;
 	}
 	do{
@@ -356,6 +397,8 @@ int makefs_access(const char *path, int mask)
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
 	retval = access(rpath, mask);
+	if(retval < 0)
+		retval = makefs_error();
 	return retval;
 }
 
