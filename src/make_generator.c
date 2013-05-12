@@ -73,28 +73,37 @@ char* get_make_path(char* makefile_name)
     char* make_path[PATH_MAX] = {NULL};
     char* temp = strrchr(makefile_name, '/'); //Format /Makefile.flag1.flag2....flagn
     strncpy(make_path, makefile_name, (strlen(makefile_name) - (strlen(temp))+9));
-    printf("About to return %s as make_path\n", make_path);
     return make_path;
 }
 
 char* get_cflags(char* init_flags)
 {
+    printf("Made it into get cflags\n");
     init_flags++;
     char* ret = malloc(sizeof(char)*PATH_MAX);
+    printf("allocated space\n");
+    strcpy(ret,"");
+    printf("copied blank string\n");
     if(strcmp(init_flags, "allf" ) == 0)//if all flags was chosen
+    {
+        printf("about to cat\n");
         strcat(ret, "-g -Wall -pedantic -O2 -Wextra"); // append all flag options
+    }
     else//if the user chose specific flags
     {
+        printf("about to loop\n");
         int i = 0;
         while(init_flags[i] != '\0')
         {   
+            printf("looping current flag char : %c\n", init_flags[i]);
             if(init_flags[i] != '.')
-                strncat(ret, init_flags[i], PATH_MAX);
+                strcat(ret, init_flags[i]);
             else
-                strncat(ret, " ", PATH_MAX);
+                strcat(ret, " ");
             i++;
         }   
     }
+    printf("get_cflags about to return %s\n", ret);
     return ret;
 }
 
@@ -107,11 +116,16 @@ bool make_gen(char* file_path, char* meta_path)
     printf("cflags_init = %s\n", cflags_init);
     cflags_init = strchr(cflags_init, '.');//format: .flag.flag1.flag2
     printf("cflags_init now = %s\n", cflags_init);
-    char* cflags = "CFLAGS = ";
+    char cflags[PATH_MAX]; 
+    strcat(cflags,"CFLAGS = ");
     bool noflags = false;
     if(cflags_init != NULL)//if the user wants flags
     {
-        strncat(cflags, get_cflags(cflags_init), PATH_MAX);
+        printf("about to cat\n");
+        char* temp = get_cflags(cflags_init);
+        printf("%s\n", temp);
+        strncat(cflags, temp, PATH_MAX);
+        printf("completed cat\n");
     }
     else 
     {
@@ -120,6 +134,7 @@ bool make_gen(char* file_path, char* meta_path)
     }
 
     //Now we will read the file names from the meta data file and determine a compiler
+    printf("%s\n", meta_path);
     FILE* meta = fopen(meta_path, "r");
     char compiler[PATH_MAX] = {NULL};
     strncat(compiler, "CC = ", PATH_MAX);
@@ -213,7 +228,7 @@ bool make_gen(char* file_path, char* meta_path)
     //start writing to make file
     fprintf(makefile, ".PHONY: clean");
     fprintf(makefile, "\n%s", compiler);
-    if(noflags = false)
+    if(noflags == false)
         fprintf(makefile, "\n%s", cflags);
     fprintf(makefile, "\n%s", objects);
     if(strcmp(deps, "DEPS = ") != 0)

@@ -1,6 +1,2 @@
 /test
 a.c
-b.c
-c.c
-a.cpp
-b.cpp
