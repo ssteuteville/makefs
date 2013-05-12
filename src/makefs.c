@@ -419,7 +419,7 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 		//here we need to strip off all of the flags and call creat on make_path.
 		printf("going to call make_gen\n");
 		fd = creat(get_make_path(rpath), mode);
-		if(make_gen(rpath, meta_path) == true); //fill the new file with makefile text
+		if(make_gen(rpath) == true); //fill the new file with makefile text
 		printf("Makefile created.\n");
 	}
 	else if(correct_type(meta_path, rpath) == true)

@@ -107,18 +107,65 @@ char* get_cflags(char* init_flags)
     return ret;
 }
 
-bool make_gen(char* file_path, char* meta_path)
+char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode)//0 for normal mode
+{                                                               //1 for determine compiler mode 
+    FILE* meta = fopen(meta_path, "r");
+    printf("Meta is open\n");
+    char file_name[PATH_MAX] = {NULL};
+    int i = 0;
+    char ret[20];
+    puts("About to loop through meta's files");
+    while(fgets(file_name, PATH_MAX, meta) != NULL)
+    {
+        printf("Just got into loop file_name: %s\n", file_name);
+        strcpy((*list)[i], file_name);
+        (*list)[i][strlen((*list)[i])-1] = '\0';
+        puts("about to determine compiler");
+        if(mode == 1)
+        {
+            puts("Checking compiler type");
+            if((*list)[i][strlen((*list)[i]) - 1] == 'c')
+            {
+                puts("setting compiler as gcc");
+                strncpy(ret,"gcc", 20);
+                printf("ret value set %s\n", ret);
+                mode++;
+            }
+            else if((*list)[i][strlen((*list)[i]) - 1] == 'p')
+            {
+                puts("setting compiler as g++");
+                strcpy(ret,"g++");
+                puts("compiler type set");
+                mode++;
+            }
+        }
+        else if(mode == 0)
+            strcpy(ret, "");
+        i++;
+    }
+    printf("Made it out of loop\n");
+    fclose(meta);   
+
+return ret;
+
+}
+
+bool make_gen(char* file_path)
 {
     puts("In make_gen");
-    int i = 0;
-    //First we will set up the cflags
+    char* meta_path = get_meta_path(file_path);//path to .files.txt
+    int i = 0;//used for loops
     char* cflags_init = strrchr(file_path, '/');//format: /makefile.flag.flag1.flag2
-    printf("cflags_init = %s\n", cflags_init);
     cflags_init = strchr(cflags_init, '.');//format: .flag.flag1.flag2
-    printf("cflags_init now = %s\n", cflags_init);
-    char cflags[PATH_MAX]; 
+    char cflags[PATH_MAX];
     strcat(cflags,"CFLAGS = ");
     bool noflags = false;
+    char runnable[20] = {NULL}; // name of the runnable
+    char compiler[PATH_MAX] = {NULL};//compiler type
+    strncat(compiler, "CC = ", PATH_MAX);
+    char files[max_files][PATH_MAX] = {NULL};//list of files in meta file
+    char* objects[PATH_MAX] = {'\0'};
+    strncat(objects, "OBJ = ", PATH_MAX);
     if(cflags_init != NULL)//if the user wants flags
     {
         printf("about to cat\n");
@@ -134,64 +181,18 @@ bool make_gen(char* file_path, char* meta_path)
     }
 
     //Now we will read the file names from the meta data file and determine a compiler
-    meta_path = get_meta_path(meta_path);//for some reason meta path kept getting messed up here.
-    printf("%s\n", meta_path);
-    FILE* meta = fopen(meta_path, "r");
-    char compiler[PATH_MAX] = {NULL};
-    strncat(compiler, "CC = ", PATH_MAX);
-    char files[max_files][PATH_MAX] = {NULL};
-    char file_name[PATH_MAX] = {NULL};
-    bool determine_compiler = false;
-    bool gcc = false;
-    bool gplusplus = false;
-    i = 0;
-    char* deps[PATH_MAX] = {'\0'};
-    strncat(deps, "DEPS = ", PATH_MAX);
-    puts("About to loop through meta's files");
-    while(fgets(file_name, PATH_MAX, meta) != NULL)
-    {
-        printf("Just got into loop file_name: %s\n", file_name);
-        strcpy(files[i], file_name);
-        files[i][strlen(files[i])-1] = '\0'; /* remove newline */
-        if(files[i][strlen(files[i]) -1] == 'h')
-        {
-            strcat(deps, files[i]);
-        }
-        if(determine_compiler == false)
-        {
-            puts("Checking compiler type");
-            if(files[i][strlen(files[i]) - 1] == 'c')
-            {
-                puts("setting compiler as gcc");
-                strncat(compiler, "gcc", PATH_MAX);
-                puts("compiler type set");
-                determine_compiler = true;
-                gcc = true;
-            }
-            else if(files[i][strlen(files[i]) - 1] == 'p')
-            {
-                puts("setting compiler as g++");
-                strcat(compiler, "g++");
-                determine_compiler = true;
-                gplusplus = true;
-                puts("compiler type set");
-            }
-        }
-        i++;
-    }
+    //meta_path = get_meta_path(file_path);//for some reason meta path kept getting messed up here.
+    printf("meta: %s\n", meta_path);
+    //load meta files into files and cancatenate correct compiler type to compiler
+    strncat(compiler, load_meta(&files, meta_path, 1), PATH_MAX);
     printf("Made it out of loop\n");
-    fclose(meta);
-    printf("Closed file\n");
-    char* runnable = files[0];
-    runnable++;
+    printf("Closed file\n files[0] = %s\n", files[0]);
+    strncpy(runnable, files[0]+1, 20);
     printf("Runnable name: %s", runnable);
     //All meta data has been loaded into memory and the compiler has been determined    
-    
     printf("Initializing objects\n");
-    char* objects[PATH_MAX] = {'\0'};
-    strncat(objects, "OBJ = ", PATH_MAX);
     i = 1; //don't start at zero because this is the name of the directory not a file
-    if(gcc == true)
+    if(compiler[strlen(compiler) -1] == 'c'/*gcc == true*/)
     {
         while(i < strlen(files))
         {
@@ -206,7 +207,7 @@ bool make_gen(char* file_path, char* meta_path)
             i++;
         }
     }
-    else if(gplusplus == true)
+    else if(compiler[strlen(compiler) -1] == '+'/*gplusplus == true*/)
     {
         while(i < strlen(files))
         {
@@ -222,8 +223,7 @@ bool make_gen(char* file_path, char* meta_path)
         }
     }
     printf("Made it out of file loading\n");
-    char* make_path = malloc(sizeof(char)*PATH_MAX);
-    make_path = get_make_path(file_path);
+    char* make_path = get_make_path(file_path);
     FILE* makefile = fopen(make_path, "a");
     //start writing to make file
     fprintf(makefile, ".PHONY: clean");
@@ -231,9 +231,7 @@ bool make_gen(char* file_path, char* meta_path)
     if(noflags == false)
         fprintf(makefile, "\n%s", cflags);
     fprintf(makefile, "\n%s", objects);
-    if(strcmp(deps, "DEPS = ") != 0)
-        fprintf(makefile, "\n%s", deps);
-    fprintf(makefile, "\n\n%%.o: %%.c $(DEPS)");//need to add if statement for dep
+    fprintf(makefile, "\n\n%%.o: %%.c");//need to add if statement for dep
     fprintf(makefile, "\n\t$(CC) -c -o $@ $< $(CFLAGS)");//need to add if statement for cflags
     fprintf(makefile, "\n\n%s: $(OBJ)", runnable);
     fprintf(makefile, "\n\t$(CC) -o $@ $^ $(CFLAGS)");//need to add if statement for cflag
