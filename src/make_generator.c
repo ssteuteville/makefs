@@ -4,6 +4,8 @@ bool correct_type(char* meta_path, char* file_path)
 {
     /*DEBUG*/printf("Entered correct_type: %s %s\n", file_path, meta_path);
     char* file_type = strrchr(file_path, '.');
+    if(file_type == NULL)
+        return false;
     /*DEBUG*/printf("correct_type: file_type = %s\n", file_type); 
     FILE* meta = fopen(meta_path, "r");
     /*DEBUG*/puts("correct_type: File opened");
@@ -61,14 +63,39 @@ char* get_meta_path(char* new_file_path)
    /*DEBUG*/ printf("get_meta_path: new_file_path: %s\n", new_file_path);
     char* meta_path[PATH_MAX] = {NULL};
     char* temp = strrchr(new_file_path, '/');//get point to last occurence of '/'
-    /*DEBUG*/printf("temp after strrchr = %s\n", temp);
     strncpy(meta_path, new_file_path, strlen(new_file_path) - strlen(temp));//copy only what is needed
-    /*DEBUG*/printf("meta_path after copy = %s\n", meta_path);
-    /*DEBUG*/puts("About to concat [./files.txt]");
     strncat(meta_path, "/.files.txt", PATH_MAX);//cancatenate metafile to the path
-    /*DEBUG*/printf("New meta_path after concat = %s\n", meta_path);
     return meta_path;
+}
 
+char* get_make_path(char* makefile_name)
+{
+    char* make_path[PATH_MAX] = {NULL};
+    char* temp = strrchr(makefile_name, '/'); //Format /Makefile.flag1.flag2....flagn
+    strncpy(make_path, makefile_name, (strlen(makefile_name) - (strlen(temp))+9));
+    printf("About to return %s as make_path\n", make_path);
+    return make_path;
+}
+
+char* get_cflags(char* init_flags)
+{
+    init_flags++;
+    char* ret = malloc(sizeof(char)*PATH_MAX);
+    if(strcmp(init_flags, "allf" ) == 0)//if all flags was chosen
+        strcat(ret, "-g -Wall -pedantic -O2 -Wextra"); // append all flag options
+    else//if the user chose specific flags
+    {
+        int i = 0;
+        while(init_flags[i] != '\0')
+        {   
+            if(init_flags[i] != '.')
+                strncat(ret, init_flags[i], PATH_MAX);
+            else
+                strncat(ret, " ", PATH_MAX);
+            i++;
+        }   
+    }
+    return ret;
 }
 
 bool make_gen(char* file_path, char* meta_path)
@@ -84,22 +111,8 @@ bool make_gen(char* file_path, char* meta_path)
     bool noflags = false;
     if(cflags_init != NULL)//if the user wants flags
     {
-        cflags_init++;
-        if(strcmp(cflags_init, "allf" ) == 0)//if all flags was chosen
-            strcat(cflags, "-g -Wall -pedantic -O2 -Wextra"); // append all flag options
-        else//if the user chose specific flags
-        {
-            i = 0;
-            while(cflags_init[i] != '\0')
-            {   
-                if(cflags_init[i] != '.')
-                    strncat(cflags, cflags_init[i], PATH_MAX);
-                else
-                    strncat(cflags, " ", PATH_MAX);
-                i++;
-            }   
-        }
-    }//CFLAGS updated fully
+        strncat(cflags, get_make_path(cflags_init), PATH_MAX);
+    }
     else 
     {
         noflags = true;
@@ -194,13 +207,10 @@ bool make_gen(char* file_path, char* meta_path)
         }
     }
     printf("Made it out of file loading\n");
-    char make_path[PATH_MAX] = {NULL};
-    char* temp = strrchr(file_path, '/'); //Format /Makefile.flag1.flag2....flagn
-    printf("file path = %s temp = %s\n", file_path, temp);
-    strncpy(make_path, file_path, (strlen(file_path) - (strlen(temp))+9));//copy the path excluding flags.
-                                                                //the 8 here is the number of chars in "Makefile"
-    printf("make_path = %s\n", make_path);
+    char* make_path = malloc(sizeof(char)*PATH_MAX);
+    make_path = get_make_path(file_path);
     FILE* makefile = fopen(make_path, "a");
+    //start writing to make file
     fprintf(makefile, ".PHONY: clean");
     fprintf(makefile, "\n%s", compiler);
     if(noflags = false)

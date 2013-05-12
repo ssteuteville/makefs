@@ -1,0 +1,3 @@
+/goodbye
+goodbye.cpp
+main.cpp
