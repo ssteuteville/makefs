@@ -111,7 +111,7 @@ bool make_gen(char* file_path, char* meta_path)
     bool noflags = false;
     if(cflags_init != NULL)//if the user wants flags
     {
-        strncat(cflags, get_make_path(cflags_init), PATH_MAX);
+        strncat(cflags, get_cflags(cflags_init), PATH_MAX);
     }
     else 
     {
