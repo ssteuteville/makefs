@@ -1,0 +1,4 @@
+/bar
+a.cpp
+b.cpp
+c.cpp

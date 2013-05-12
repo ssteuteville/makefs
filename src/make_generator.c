@@ -107,9 +107,7 @@ bool make_gen(char* file_path, char* meta_path)
     }
 
     //Now we will read the file names from the meta data file and determine a compiler
-    printf("About to open .files.txt located @ %s\n", meta_path);
     FILE* meta = fopen(meta_path, "r");
-    printf("Meta is open\n");
     char compiler[PATH_MAX] = {NULL};
     strncat(compiler, "CC = ", PATH_MAX);
     char files[max_files][PATH_MAX] = {NULL};
@@ -118,12 +116,19 @@ bool make_gen(char* file_path, char* meta_path)
     bool gcc = false;
     bool gplusplus = false;
     i = 0;
+    char* deps[PATH_MAX] = {'\0'};
+    strncat(deps, "DEPS = ", PATH_MAX);
+
     puts("About to loop through meta's files");
     while(fgets(file_name, PATH_MAX, meta) != NULL)
     {
         printf("Just got into loop file_name: %s\n", file_name);
         strcpy(files[i], file_name);
-        files[i][strlen(files[i])-1] = '\0';
+        files[i][strlen(files[i])-1] = '\0'; /* remove newline */
+        if(files[i][strlen(files[i]) -1] == 'h')
+        {
+            strcat(deps, files[i]);
+        }
         if(determine_compiler == false)
         {
             puts("Checking compiler type");
@@ -152,27 +157,17 @@ bool make_gen(char* file_path, char* meta_path)
     char* runnable = files[0];
     runnable++;
     printf("Runnable name: %s", runnable);
-    //All meta data has been loaded into memory and the compiler has been determined
-
+    //All meta data has been loaded into memory and the compiler has been determined    
     
-    
-    //Now we will build a string to represent all of the object files
-    //and build a string to represent all of the dependents. AKA .h's
-    printf("Initializing deps\n");
-    char* deps[PATH_MAX];
-    strncat(deps, "DEPS = ", PATH_MAX);
     printf("Initializing objects\n");
-    char* objects[PATH_MAX];
+    char* objects[PATH_MAX] = {'\0'};
     strncat(objects, "OBJ = ", PATH_MAX);
     i = 1; //don't start at zero because this is the name of the directory not a file
-    if(gcc = true)
+    if(gcc == true)
     {
-        printf("gcc = true\n");
         while(i < strlen(files))
         {
             printf("Looping through files, current file name : %s\n", files[i]);
-            if(files[i][strlen(files[i]) -1] == 'h')
-                strcat(deps, files[i]);
             if(strlen(files[i]) >2)
             {
                 printf("made it into if\n");
@@ -183,12 +178,10 @@ bool make_gen(char* file_path, char* meta_path)
             i++;
         }
     }
-    else if(gplusplus = true)
+    else if(gplusplus == true)
     {
         while(i < strlen(files))
         {
-            if(files[i][strlen(files[i]) -1] == 'h')
-                strcat(deps, files[i]);
             if(strlen(files[i]) > 4)
             {
                 files[i][strlen(files[i])-1] = '\0';//remove a p

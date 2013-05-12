@@ -370,15 +370,6 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	printf("Meta path: %s\n", meta_path);
 	
 	printf("rpath before creation: %s\n", rpath);
-	fd = creat(rpath, mode);//this can't be here. It needs to go within the cases below
-	printf("fd: %d\n", fd);
-	fi->fh = fd;
-	printf("fi->fh: %d\n", fi->fh);
-	if(fd < 0)
-	{
-		retval = makefs_error();
-		return retval;
-	}
 	printf("about check if ""Makefile"" is a part of the path name\n");
 	if (strstr(path, "/Makefile") != NULL)//if mMakefile is part of path name
 	{
@@ -389,12 +380,17 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	}
 	else if(correct_type(meta_path, rpath) == true)
 	{
-		//here we need to call creat on rpath
+		fd = creat(rpath, mode);
+		printf("fd: %d\n", fd);
+		fi->fh = fd;
+		printf("fi->fh: %d\n", fi->fh);
+		if(fd < 0)
+		{
+			retval = makefs_error();
+			return retval;
+		}
 		add_meta(meta_path, rpath);
 	}
-	/*else
-		fd = creat*/
-
 	return retval;
 }
 
