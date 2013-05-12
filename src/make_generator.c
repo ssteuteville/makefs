@@ -150,6 +150,44 @@ return ret;
 
 }
 
+char* build_objects(char list[max_files][PATH_MAX], char* comp)
+{
+    char ret[PATH_MAX] = {NULL};
+    if(comp[strlen(comp) -1] == 'c')
+    {
+        int i = 1;
+        while(i < strlen(list))
+        {
+            printf("Looping through files, current file name : %s\n", list[i]);
+            if(strlen(list[i]) >2)
+            {
+                printf("made it into if\n");
+                list[i][strlen(list[i])-1] = 'o';//change the c to an o
+                strcat(ret, list[i]);//add to the object list  
+                strncat(ret, " ", 1);          
+            }
+            i++;
+        }
+    }
+    else if(comp[strlen(comp) -1] == '+')
+    {
+        int i = 1;
+        while(i < strlen(list))
+        {
+            if(strlen(list[i]) > 4)
+            {
+                list[i][strlen(list[i])-1] = '\0';//remove a p
+                list[i][strlen(list[i])-1] = '\0';//remove a p
+                list[i][strlen(list[i])-1] = 'o';//change the c to an o
+                strcat(ret, list[i]);
+                strncat(ret, " ", 1);
+            }
+            i++;
+        }
+    } 
+    return ret;  
+}
+
 bool make_gen(char* file_path)
 {
     puts("In make_gen");
@@ -181,47 +219,18 @@ bool make_gen(char* file_path)
     }
 
     //Now we will read the file names from the meta data file and determine a compiler
-    //meta_path = get_meta_path(file_path);//for some reason meta path kept getting messed up here.
     printf("meta: %s\n", meta_path);
     //load meta files into files and cancatenate correct compiler type to compiler
     strncat(compiler, load_meta(&files, meta_path, 1), PATH_MAX);
+    //DEBUGGING
     printf("Made it out of loop\n");
     printf("Closed file\n files[0] = %s\n", files[0]);
+    //copy the runnable name from the list of files
     strncpy(runnable, files[0]+1, 20);
     printf("Runnable name: %s", runnable);
     //All meta data has been loaded into memory and the compiler has been determined    
     printf("Initializing objects\n");
-    i = 1; //don't start at zero because this is the name of the directory not a file
-    if(compiler[strlen(compiler) -1] == 'c'/*gcc == true*/)
-    {
-        while(i < strlen(files))
-        {
-            printf("Looping through files, current file name : %s\n", files[i]);
-            if(strlen(files[i]) >2)
-            {
-                printf("made it into if\n");
-                files[i][strlen(files[i])-1] = 'o';//change the c to an o
-                strcat(objects, files[i]);//add to the object list  
-                strncat(objects, " ", 1);          
-            }
-            i++;
-        }
-    }
-    else if(compiler[strlen(compiler) -1] == '+'/*gplusplus == true*/)
-    {
-        while(i < strlen(files))
-        {
-            if(strlen(files[i]) > 4)
-            {
-                files[i][strlen(files[i])-1] = '\0';//remove a p
-                files[i][strlen(files[i])-1] = '\0';//remove a p
-                files[i][strlen(files[i])-1] = 'o';//change the c to an o
-                strcat(objects, files[i]);
-                strncat(objects, " ", 1);
-            }
-            i++;
-        }
-    }
+    strncat(objects, build_objects(files, compiler),PATH_MAX);
     printf("Made it out of file loading\n");
     char* make_path = get_make_path(file_path);
     FILE* makefile = fopen(make_path, "a");

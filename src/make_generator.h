@@ -61,4 +61,6 @@ char* get_cflags(char* init_flags);
 # it will return either "gcc" or "g++" otherwise
 */
 char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode);
+
+char* build_objects(char list[max_files][PATH_MAX], char* comp);
 #endif
