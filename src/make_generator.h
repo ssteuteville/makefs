@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #define max_files 50
+#define max_run 25
 
 /* ...:::correct_type:::...
 # This function will loop through the meta data file and search for the first 

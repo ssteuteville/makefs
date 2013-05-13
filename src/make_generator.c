@@ -113,7 +113,7 @@ char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode)//0
     printf("Meta is open\n");
     char file_name[PATH_MAX] = {NULL};
     int i = 0;
-    char ret[20];
+    char ret[max_run];
     puts("About to loop through meta's files");
     while(fgets(file_name, PATH_MAX, meta) != NULL)
     {
@@ -127,7 +127,7 @@ char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode)//0
             if((*list)[i][strlen((*list)[i]) - 1] == 'c')
             {
                 puts("setting compiler as gcc");
-                strncpy(ret,"gcc", 20);
+                strncpy(ret,"gcc", max_run);
                 printf("ret value set %s\n", ret);
                 mode++;
             }
@@ -192,18 +192,21 @@ bool make_gen(char* file_path)
 {
     puts("In make_gen");
     char* meta_path = get_meta_path(file_path);//path to .files.txt
-    int i = 0;//used for loops
     char* cflags_init = strrchr(file_path, '/');//format: /makefile.flag.flag1.flag2
     cflags_init = strchr(cflags_init, '.');//format: .flag.flag1.flag2
     char cflags[PATH_MAX];
     strcat(cflags,"CFLAGS = ");
     bool noflags = false;
-    char runnable[20] = {NULL}; // name of the runnable
+    char runnable[max_run] = {NULL}; // name of the runnable
+    
     char compiler[PATH_MAX] = {NULL};//compiler type
     strncat(compiler, "CC = ", PATH_MAX);
+    
     char files[max_files][PATH_MAX] = {NULL};//list of files in meta file
+    
     char* objects[PATH_MAX] = {'\0'};
     strncat(objects, "OBJ = ", PATH_MAX);
+
     if(cflags_init != NULL)//if the user wants flags
     {
         printf("about to cat\n");
@@ -226,7 +229,7 @@ bool make_gen(char* file_path)
     printf("Made it out of loop\n");
     printf("Closed file\n files[0] = %s\n", files[0]);
     //copy the runnable name from the list of files
-    strncpy(runnable, files[0]+1, 20);
+    strncpy(runnable, files[0]+1, max_run);
     printf("Runnable name: %s", runnable);
     //All meta data has been loaded into memory and the compiler has been determined    
     printf("Initializing objects\n");
