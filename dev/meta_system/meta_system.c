@@ -12,10 +12,10 @@ void remove_meta(char* old_meta_file, char* file_removed)
     puts("Initiating remove_meta");
     FILE* meta          = fopen(old_meta_file, "r");
     FILE* new_meta      = fopen("new_meta_data.txt", "w");
-    char file_name[256] = {'\0'};
+    char file_name[PATH_MAX] = {'\0'};
     char* p             = file_name;
     int i               = 0;
-    char ret[256]       = {'\0'};
+    char ret[PATH_MAX]       = {'\0'};
     printf("File to be deleted: %s\n", file_removed);
     puts("Looping through meta-data...");
     while(fgets(file_name, sizeof(file_name), meta) != NULL)
@@ -42,10 +42,10 @@ void rename_meta(char* old_meta_file, char* file_removed, char* file_renamed)
     puts("Initiating rename_meta");
     FILE* meta          = fopen(old_meta_file, "r");
     FILE* new_meta      = fopen("new_meta_data.txt", "w");
-    char file_name[256] = {'\0'};
+    char file_name[PATH_MAX] = {'\0'};
     char* p             = file_name;
     int i               = 0;
-    char ret[256]       = {'\0'};
+    char ret[PATH_MAX]       = {'\0'};
     printf("File to be renamed: %s\n", file_removed);
     printf("New name will be: %s\n", file_renamed);
     puts("Looping through meta-data...");
@@ -106,10 +106,60 @@ char* change_filename(char* path, char* filename)
     puts("********************************");
     return ret;
 }
+
+char* load_meta(char (*list)[MAX_FILES][PATH_MAX], char* meta_path, int mode)//0 for normal mode
+{     
+    puts("********************************");
+    puts("Initiating load_meta");                                                        //1 for determine compiler mode 
+    FILE* meta = fopen(meta_path, "r");
+    printf("Meta is open\n");
+    char file_name[PATH_MAX] = {'\0'};
+    int i = 0;
+    char ret[MAX_FILES] = {'\0'};
+    puts("About to loop through meta's files");
+    while(fgets(file_name, PATH_MAX, meta) != NULL)
+    {
+        printf("Just got into loop file_name: %s\n", file_name);
+        strcpy((*list)[i], file_name);
+        (*list)[i][strlen((*list)[i])-1] = '\0';
+        puts("about to determine compiler");
+        if(mode == 1)
+        {
+            puts("Checking compiler type");
+            if((*list)[i][strlen((*list)[i]) - 1] == 'c')
+            {
+                puts("setting compiler as gcc");
+                strncpy(ret,"gcc", MAX_FILES);
+                printf("ret value set %s\n", ret);
+                mode++;
+            }
+            else if((*list)[i][strlen((*list)[i]) - 1] == 'p')
+            {
+                puts("setting compiler as g++");
+                strcpy(ret,"g++");
+                printf("ret value set %s\n", ret);
+                mode++;
+            }
+            puts("compiler type set");
+        }
+        else if(mode == 0)
+            strcpy(ret, "");
+        i++;
+    }
+    printf("Made it out of loop\n");
+    fclose(meta);  
+    printf("Exiting load_meta with %s as ret value\n", ret); 
+    puts("********************************");
+
+return ret;
+
+}
+
 void main(int argc, char** argv)
 {
-	char files[MAX_FILES][PATH_MAX]   = {'\0'};
-	char* test                        = NULL;
+    char files[MAX_FILES][PATH_MAX]   = {'\0'};
+    char test[MAX_FILES][PATH_MAX]    = {'\0'};
+    char* ret                         = {'\0'};
     char* file_to_remove              = "a.c";
     char* file_to_rename              = "b.c";
     char* file_to_add                 = "d.c";
@@ -120,5 +170,13 @@ void main(int argc, char** argv)
     rename_meta(argv[1], file_to_rename, new_name_for_file);
     add_meta(argv[1], file_to_add);
     printf("Return value actually was %s\n",change_filename(file_name_to_change, name_to_change_file));
+    ret = load_meta(&test, argv[1], 1);
+    printf("Compiler %s\n", ret);
+    int i = 0;
+    puts("Files Loaded\n==================");
+    for(i; i<strlen(test); i++)
+    {
+        printf("Index %d : %s\n", i, test[i]);
+    }
 
 }
