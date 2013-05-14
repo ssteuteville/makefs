@@ -1,16 +1,11 @@
-/*FILE PRACTICE removing a line from a file.*/
-#include <stdio.h>
-#include <limits.h>
-#include <string.h>
-#define MAX_FILE_NAME 35
-#define MAX_FILES 20
+#include "meta_system.h"
 
 
-void remove_meta(char* old_meta_file, char* file_removed)
+void remove_meta(char* meta_path, char* file_removed)
 {
     puts("********************************");
     puts("Initiating remove_meta");
-    FILE* meta          = fopen(old_meta_file, "r");
+    FILE* meta          = fopen(meta_path, "r");
     FILE* new_meta      = fopen("new_meta_data.txt", "w");
     char file_name[PATH_MAX] = {'\0'};
     char* p             = file_name;
@@ -28,19 +23,19 @@ void remove_meta(char* old_meta_file, char* file_removed)
             fprintf(new_meta, "\n");
         }
     }
-    remove(old_meta_file); /* remove old meta file*/
-    rename("new_meta_data.txt", old_meta_file); /* rename to original meta file */
+    remove(meta_path); /* remove old meta file*/
+    rename("new_meta_data.txt", meta_path); /* rename to original meta file */
     fclose(meta);
     fclose(new_meta);
     puts("Exiting remove_meta");
     puts("********************************");
 }
 
-void rename_meta(char* old_meta_file, char* file_removed, char* file_renamed)
+void rename_meta(char* meta_path, char* file_removed, char* file_renamed)
 {
     puts("********************************");
     puts("Initiating rename_meta");
-    FILE* meta          = fopen(old_meta_file, "r");
+    FILE* meta          = fopen(meta_path, "r");
     FILE* new_meta      = fopen("new_meta_data.txt", "w");
     char file_name[PATH_MAX] = {'\0'};
     char* p             = file_name;
@@ -58,25 +53,29 @@ void rename_meta(char* old_meta_file, char* file_removed, char* file_renamed)
             fprintf(new_meta, "%s", file_name);
             fprintf(new_meta, "\n");
         }
+        else
+        {
+            printf("%s read and renamed to %s\n", file_removed, file_renamed);
+            fprintf(new_meta, "%s", file_renamed);
+            fprintf(new_meta, "\n");  
+        }
     }
-    printf("%s read and renamed to %s\n", file_removed, file_renamed);
-    fprintf(new_meta, "%s", file_renamed);
-    fprintf(new_meta, "\n");
-    remove(old_meta_file); /* remove old meta file*/
-    rename("new_meta_data.txt", old_meta_file); /* rename to original meta file */
+    remove(meta_path); /* remove old meta file*/
+    rename("new_meta_data.txt", meta_path); /* rename to original meta file */
     fclose(meta);
     fclose(new_meta);   
     puts("Exiting rename_meta");
     puts("********************************");
 }
 
-void add_meta(char* meta_file, char* filename)
+
+void add_meta(char* meta_path, char* file_path)
 {  
     puts("********************************");
     puts("Initiating add_meta");
-    FILE* meta = fopen(meta_file, "a");
-    printf("Added %s to meta file\n", filename);
-    fprintf(meta, "%s\n",filename);
+    FILE* meta = fopen(meta_path, "a");
+    printf("Added %s to meta file\n", file_path);
+    fprintf(meta, "%s\n",file_path);
     fclose(meta);
     puts("Exiting add_meta");
     puts("********************************");
@@ -107,7 +106,7 @@ char* change_filename(char* path, char* filename)
     return ret;
 }
 
-char* load_meta(char (*list)[MAX_FILES][PATH_MAX], char* meta_path, int mode)//0 for normal mode
+int load_meta(char (*list)[MAX_FILES][PATH_MAX], char* meta_path)//0 for normal mode
 {     
     puts("********************************");
     puts("Initiating load_meta");                                                        //1 for determine compiler mode 
@@ -116,42 +115,24 @@ char* load_meta(char (*list)[MAX_FILES][PATH_MAX], char* meta_path, int mode)//0
     char file_name[PATH_MAX] = {'\0'};
     int i = 0;
     char ret[MAX_FILES] = {'\0'};
+    int file_count = 0;
     puts("About to loop through meta's files");
     while(fgets(file_name, PATH_MAX, meta) != NULL)
     {
         printf("Just got into loop file_name: %s\n", file_name);
         strcpy((*list)[i], file_name);
+        printf("incremenintg file count from %d to %d\n", file_count, file_count + 1);
+        file_count++;
         (*list)[i][strlen((*list)[i])-1] = '\0';
-        puts("about to determine compiler");
-        if(mode == 1)
-        {
-            puts("Checking compiler type");
-            if((*list)[i][strlen((*list)[i]) - 1] == 'c')
-            {
-                puts("setting compiler as gcc");
-                strncpy(ret,"gcc", MAX_FILES);
-                printf("ret value set %s\n", ret);
-                mode++;
-            }
-            else if((*list)[i][strlen((*list)[i]) - 1] == 'p')
-            {
-                puts("setting compiler as g++");
-                strcpy(ret,"g++");
-                printf("ret value set %s\n", ret);
-                mode++;
-            }
-            puts("compiler type set");
-        }
-        else if(mode == 0)
-            strcpy(ret, "");
+        printf("list[%d] is %s\n", i, (*list)[i]);
         i++;
     }
     printf("Made it out of loop\n");
     fclose(meta);  
-    printf("Exiting load_meta with %s as ret value\n", ret); 
+    printf("Exiting load_meta with %d as ret value\n", file_count); 
     puts("********************************");
 
-return ret;
+    return file_count;
 
 }
 
@@ -159,7 +140,7 @@ void main(int argc, char** argv)
 {
     char files[MAX_FILES][PATH_MAX]   = {'\0'};
     char test[MAX_FILES][PATH_MAX]    = {'\0'};
-    char* ret                         = {'\0'};
+    int ret                           = 0;
     char* file_to_remove              = "a.c";
     char* file_to_rename              = "b.c";
     char* file_to_add                 = "d.c";
@@ -170,13 +151,11 @@ void main(int argc, char** argv)
     rename_meta(argv[1], file_to_rename, new_name_for_file);
     add_meta(argv[1], file_to_add);
     printf("Return value actually was %s\n",change_filename(file_name_to_change, name_to_change_file));
-    ret = load_meta(&test, argv[1], 1);
-    printf("Compiler %s\n", ret);
+    ret = load_meta(&test, argv[1]);
     int i = 0;
     puts("Files Loaded\n==================");
-    for(i; i<strlen(test); i++)
+    for(i; i< ret; i++)
     {
         printf("Index %d : %s\n", i, test[i]);
     }
-
 }

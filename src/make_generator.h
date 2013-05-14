@@ -16,6 +16,7 @@
 # @return -- true if the new file matches the correct file type
 */
 bool correct_type(char* meta_path, char* file_path);
+char* determine_compiler(char* meta_path);
 
 /* ...:::add_meta:::...
 # This function will add the new file name to the meta data file

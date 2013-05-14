@@ -37,6 +37,9 @@ bool correct_type(char* meta_path, char* file_path)
     return false;
 }
 
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void add_meta(char* meta_path, char* file_path) 
 {
     /* 
@@ -58,6 +61,9 @@ void add_meta(char* meta_path, char* file_path)
 
 }
 
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 char* get_meta_path(char* new_file_path)
 {
    /*DEBUG*/ printf("get_meta_path: new_file_path: %s\n", new_file_path);
@@ -68,6 +74,9 @@ char* get_meta_path(char* new_file_path)
     return meta_path;
 }
 
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 char* get_make_path(char* makefile_name)
 {
     char* make_path[PATH_MAX] = {NULL};
@@ -107,6 +116,9 @@ char* get_cflags(char* init_flags)
     return ret;
 }
 
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode)//0 for normal mode
 {                                                               //1 for determine compiler mode 
     FILE* meta = fopen(meta_path, "r");
@@ -191,6 +203,9 @@ char* build_objects(char list[max_files][PATH_MAX], char* comp)
 bool make_gen(char* file_path)
 {
     puts("In make_gen");
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //THE LINE BELOW NEEDS TO BE CHANGED ONCE WE USE META_SYSTEM
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     char* meta_path = get_meta_path(file_path);//path to .files.txt
     char* cflags_init = strrchr(file_path, '/');//format: /makefile.flag.flag1.flag2
     cflags_init = strchr(cflags_init, '.');//format: .flag.flag1.flag2
@@ -206,7 +221,7 @@ bool make_gen(char* file_path)
     
     char* objects[PATH_MAX] = {'\0'};
     strncat(objects, "OBJ = ", PATH_MAX);
-
+    //Perhaps we should add some of the following logic to get_cflags()?
     if(cflags_init != NULL)//if the user wants flags
     {
         printf("about to cat\n");
@@ -224,6 +239,9 @@ bool make_gen(char* file_path)
     //Now we will read the file names from the meta data file and determine a compiler
     printf("meta: %s\n", meta_path);
     //load meta files into files and cancatenate correct compiler type to compiler
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //THE LINE BELOW NEEDS TO BE CHANGED ONCE WE USE META_SYSTEM
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     strncat(compiler, load_meta(&files, meta_path, 1), PATH_MAX);
     //DEBUGGING
     printf("Made it out of loop\n");
@@ -251,4 +269,30 @@ bool make_gen(char* file_path)
     fprintf(makefile, "\n\trm -f %s $(OBJ)\n", runnable);
     fclose(makefile);
     return true;
+}
+
+char* determine_compiler(char* meta_path)
+{
+    printf("Made it into determine_compiler\n");
+    FILE* meta = fopen(meta_path, "r");
+    char* file_name = malloc(sizeof(char)*PATH_MAX);
+    while(fgets(file_name, PATH_MAX, meta) != NULL)
+    {
+        printf("Just got into loop file_name: %s\n", file_name);    
+        puts("Checking compiler type");
+        printf("Comparing %c to %s\n",file_name[strlen(file_name) - 2], file_name);
+        if(file_name[strlen(file_name)- 2] == 'c')
+        {
+            puts("setting compiler as gcc");
+            fclose(meta);
+            return "gcc";
+        }
+        else if(file_name[strlen(file_name) - 2] == 'p')
+        {
+            puts("setting compiler as g++");
+            fclose(meta);
+            return "g++";
+        }
+    }
+    return "Nothing To Compare";   
 }

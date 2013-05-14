@@ -1,5 +1,6 @@
 #include "parameters.h"
 #include "make_generator.h"
+//#include "meta_system.h"
 
 #include <ctype.h>
 #include <dirent.h>
@@ -409,6 +410,9 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	int fd;
 	char rpath[PATH_MAX] = {NULL};
 	makefs_realpath(rpath, path);//get the abosolute path that this file will be created at
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //THE LINE BELOW NEEDS TO BE CHANGED ONCE WE USE META_SYSTEM
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	char* meta_path = get_meta_path(rpath);//get the path to this directories metafile
 	printf("Meta path: %s\n", meta_path);
 	
@@ -418,6 +422,9 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	{
 		//here we need to strip off all of the flags and call creat on make_path.
 		printf("going to call make_gen\n");
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //THE LINE BELOW NEEDS TO BE CHANGED ONCE WE USE META_SYSTEM
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		fd = creat(get_make_path(rpath), mode);
 		if(make_gen(rpath) == true); //fill the new file with makefile text
 		printf("Makefile created.\n");
