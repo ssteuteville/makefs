@@ -95,7 +95,9 @@ int makefs_unlink(const char *path)
 	int retval = 0;
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
-	remove_meta(change_filename(rpath, ".files.txt"), rpath);
+	char* meta_path = change_filename(rpath, ".files.txt");
+	if(correct_type(meta_path, rpath)==true)
+		remove_meta(meta_path, rpath);
 	retval = unlink(rpath);
 	if(retval < 0)
 		retval = makefs_error();
@@ -135,7 +137,8 @@ int makefs_rename(const char *path, const char *newpath)
 	makefs_realpath(rpath, path);
 	makefs_realpath(rnewpath, newpath);
 	retval = rename(rpath, rnewpath);
-	rename_meta(change_filename(rpath, ".files.txt"), rpath, rnewpath);
+	if(correct_type(change_filename(rpath, ".files.txt"), rpath)==true)
+		rename_meta(change_filename(rpath, ".files.txt"), rpath, rnewpath);
 	if(retval < 0)
 		retval = makefs_error();
 	return retval;
