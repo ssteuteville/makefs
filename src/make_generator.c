@@ -37,50 +37,7 @@ bool correct_type(char* meta_path, char* file_path)
     return false;
 }
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-/*void add_meta(char* meta_path, char* file_path) 
-{
-    printf("Entered add_meta: meta_path: %s file_path %s\n", meta_path, file_path);
-    FILE* meta = fopen(meta_path, "a");
-    printf("add_meta: opened file");
-    char* file_name = strrchr(file_path, '/');
-    file_name++;
-    strncat(file_name, "\n", PATH_MAX);
-    printf("add_meta: filename: %s\n", file_name);
-    if(file_name != NULL)
-    {
-        fprintf(meta, file_name);   
-    }
-    fclose(meta);
 
-
-}*/
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-/*char* get_meta_path(char* new_file_path)
-{
-    printf("get_meta_path: new_file_path: %s\n", new_file_path);
-    char* meta_path[PATH_MAX] = {'\0'};
-    char* temp = strrchr(new_file_path, '/');//get point to last occurence of '/'
-    strncpy(meta_path, new_file_path, strlen(new_file_path) - strlen(temp));//copy only what is needed
-    strncat(meta_path, "/.files.txt", PATH_MAX);//cancatenate metafile to the path
-    return meta_path;
-}*/
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-/*char* get_make_path(char* makefile_name)
-{
-    char* make_path[PATH_MAX] = {'\0'};
-    char* temp = strrchr(makefile_name, '/'); //Format /Makefile.flag1.flag2....flagn
-    strncpy(make_path, makefile_name, (strlen(makefile_name) - (strlen(temp))+9));
-    return make_path;
-}*/
 
 char* get_cflags(char* init_flags)
 {
@@ -88,7 +45,6 @@ char* get_cflags(char* init_flags)
     init_flags++;
     char* ret = malloc(sizeof(char)*PATH_MAX);
     printf("allocated space\n");
-    strcpy(ret,"");
     printf("copied blank string\n");
     if(strcmp(init_flags, "allf" ) == 0)//if all flags was chosen
     {
@@ -103,7 +59,11 @@ char* get_cflags(char* init_flags)
         {   
             printf("looping current flag char : %c\n", init_flags[i]);
             if(init_flags[i] != '.')
-                strcat(ret, init_flags[i]);
+            {
+                //strcat(ret, init_flags[i]);
+                ret += init_flags[i];//this won't work but it also wont segfault =(
+                printf("ret = %s\n", ret);
+            }
             else
                 strcat(ret, " ");
             i++;
@@ -113,51 +73,6 @@ char* get_cflags(char* init_flags)
     return ret;
 }
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-/*char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode)//0 for normal mode
-{                                                               //1 for determine compiler mode 
-    FILE* meta = fopen(meta_path, "r");
-    printf("Meta is open\n");
-    char file_name[PATH_MAX] = {'\0'};
-    int i = 0;
-    char ret[max_run];
-    puts("About to loop through meta's files");
-    while(fgets(file_name, PATH_MAX, meta) != NULL)
-    {
-        printf("Just got into loop file_name: %s\n", file_name);
-        strcpy((*list)[i], file_name);
-        (*list)[i][strlen((*list)[i])-1] = '\0';
-        puts("about to determine compiler");
-        if(mode == 1)
-        {
-            puts("Checking compiler type");
-            if((*list)[i][strlen((*list)[i]) - 1] == 'c')
-            {
-                puts("setting compiler as gcc");
-                strncpy(ret,"gcc", max_run);
-                printf("ret value set %s\n", ret);
-                mode++;
-            }
-            else if((*list)[i][strlen((*list)[i]) - 1] == 'p')
-            {
-                puts("setting compiler as g++");
-                strcpy(ret,"g++");
-                puts("compiler type set");
-                mode++;
-            }
-        }
-        else if(mode == 0)
-            strcpy(ret, "");
-        i++;
-    }
-    printf("Made it out of loop\n");
-    fclose(meta);   
-
-return ret;
-
-}*/
 
 char* build_objects(char list[max_files][PATH_MAX], char* comp, int num_files)
 {
@@ -200,9 +115,6 @@ char* build_objects(char list[max_files][PATH_MAX], char* comp, int num_files)
 bool make_gen(char* file_path)
 {
     puts("In make_gen");
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //THE LINE BELOW NEEDS TO BE CHANGED ONCE WE USE META_SYSTEM
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     char* meta_path = change_filename(file_path, ".files.txt");
     char* cflags_init = strrchr(file_path, '/');//format: /makefile.flag.flag1.flag2
     cflags_init = strchr(cflags_init, '.');//format: .flag.flag1.flag2
