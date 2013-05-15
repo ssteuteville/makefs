@@ -1,5 +1,5 @@
 #include "make_generator.h"
-
+#include "meta_system.h"
 bool correct_type(char* meta_path, char* file_path) 
 {
     /*DEBUG*/printf("Entered correct_type: %s %s\n", file_path, meta_path);
@@ -9,7 +9,7 @@ bool correct_type(char* meta_path, char* file_path)
     /*DEBUG*/printf("correct_type: file_type = %s\n", file_type); 
     FILE* meta = fopen(meta_path, "r");
     /*DEBUG*/puts("correct_type: File opened");
-    char file_in_meta[PATH_MAX] = {NULL};
+    char file_in_meta[PATH_MAX] = {'\0'};
     while(fgets(file_in_meta, PATH_MAX, meta) != NULL)//case one there is a .c or .cpp in .files.txt
     {
         /*DEBUG*/printf("correct_type: made it into loop, file_in_meta = %s\n", file_in_meta);
@@ -40,18 +40,15 @@ bool correct_type(char* meta_path, char* file_path)
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void add_meta(char* meta_path, char* file_path) 
+/*void add_meta(char* meta_path, char* file_path) 
 {
-    /* 
-    Function to append (use mode "a") filename to meta-data
-    */
-    /*DEBUG*/printf("Entered add_meta: meta_path: %s file_path %s\n", meta_path, file_path);
+    printf("Entered add_meta: meta_path: %s file_path %s\n", meta_path, file_path);
     FILE* meta = fopen(meta_path, "a");
-    /*DEBUG*/printf("add_meta: opened file");
+    printf("add_meta: opened file");
     char* file_name = strrchr(file_path, '/');
     file_name++;
     strncat(file_name, "\n", PATH_MAX);
-    /*DEBUG*/printf("add_meta: filename: %s\n", file_name);
+    printf("add_meta: filename: %s\n", file_name);
     if(file_name != NULL)
     {
         fprintf(meta, file_name);   
@@ -59,31 +56,31 @@ void add_meta(char* meta_path, char* file_path)
     fclose(meta);
 
 
-}
+}*/
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-char* get_meta_path(char* new_file_path)
+/*char* get_meta_path(char* new_file_path)
 {
-   /*DEBUG*/ printf("get_meta_path: new_file_path: %s\n", new_file_path);
-    char* meta_path[PATH_MAX] = {NULL};
+    printf("get_meta_path: new_file_path: %s\n", new_file_path);
+    char* meta_path[PATH_MAX] = {'\0'};
     char* temp = strrchr(new_file_path, '/');//get point to last occurence of '/'
     strncpy(meta_path, new_file_path, strlen(new_file_path) - strlen(temp));//copy only what is needed
     strncat(meta_path, "/.files.txt", PATH_MAX);//cancatenate metafile to the path
     return meta_path;
-}
+}*/
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-char* get_make_path(char* makefile_name)
+/*char* get_make_path(char* makefile_name)
 {
-    char* make_path[PATH_MAX] = {NULL};
+    char* make_path[PATH_MAX] = {'\0'};
     char* temp = strrchr(makefile_name, '/'); //Format /Makefile.flag1.flag2....flagn
     strncpy(make_path, makefile_name, (strlen(makefile_name) - (strlen(temp))+9));
     return make_path;
-}
+}*/
 
 char* get_cflags(char* init_flags)
 {
@@ -119,11 +116,11 @@ char* get_cflags(char* init_flags)
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //THIS FUNCTION NEEDS TO BE DELETED ONCE WE ADD FILE_SYSTEM.C/H
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode)//0 for normal mode
+/*char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode)//0 for normal mode
 {                                                               //1 for determine compiler mode 
     FILE* meta = fopen(meta_path, "r");
     printf("Meta is open\n");
-    char file_name[PATH_MAX] = {NULL};
+    char file_name[PATH_MAX] = {'\0'};
     int i = 0;
     char ret[max_run];
     puts("About to loop through meta's files");
@@ -160,15 +157,15 @@ char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode)//0
 
 return ret;
 
-}
+}*/
 
-char* build_objects(char list[max_files][PATH_MAX], char* comp)
+char* build_objects(char list[max_files][PATH_MAX], char* comp, int num_files)
 {
-    char ret[PATH_MAX] = {NULL};
+    char ret[PATH_MAX] = {'\0'};
     if(comp[strlen(comp) -1] == 'c')
     {
         int i = 1;
-        while(i < strlen(list))
+        while(i < num_files)
         {
             printf("Looping through files, current file name : %s\n", list[i]);
             if(strlen(list[i]) >2)
@@ -184,7 +181,7 @@ char* build_objects(char list[max_files][PATH_MAX], char* comp)
     else if(comp[strlen(comp) -1] == '+')
     {
         int i = 1;
-        while(i < strlen(list))
+        while(i < num_files)
         {
             if(strlen(list[i]) > 4)
             {
@@ -206,18 +203,19 @@ bool make_gen(char* file_path)
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //THE LINE BELOW NEEDS TO BE CHANGED ONCE WE USE META_SYSTEM
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    char* meta_path = get_meta_path(file_path);//path to .files.txt
+    char* meta_path = change_filename(file_path, ".files.txt");
     char* cflags_init = strrchr(file_path, '/');//format: /makefile.flag.flag1.flag2
     cflags_init = strchr(cflags_init, '.');//format: .flag.flag1.flag2
     char cflags[PATH_MAX];
     strcat(cflags,"CFLAGS = ");
     bool noflags = false;
-    char runnable[max_run] = {NULL}; // name of the runnable
+    char runnable[max_run] = {'\0'}; // name of the runnable
+    int file_count = 0;
     
-    char compiler[PATH_MAX] = {NULL};//compiler type
+    char compiler[PATH_MAX] = {'\0'};//compiler type
     strncat(compiler, "CC = ", PATH_MAX);
     
-    char files[max_files][PATH_MAX] = {NULL};//list of files in meta file
+    char files[max_files][PATH_MAX] = {'\0'};//list of files in meta file
     
     char* objects[PATH_MAX] = {'\0'};
     strncat(objects, "OBJ = ", PATH_MAX);
@@ -239,10 +237,8 @@ bool make_gen(char* file_path)
     //Now we will read the file names from the meta data file and determine a compiler
     printf("meta: %s\n", meta_path);
     //load meta files into files and cancatenate correct compiler type to compiler
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //THE LINE BELOW NEEDS TO BE CHANGED ONCE WE USE META_SYSTEM
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    strncat(compiler, load_meta(&files, meta_path, 1), PATH_MAX);
+    strncat(compiler, determine_compiler(meta_path), PATH_MAX);
+    file_count = load_meta(&files, meta_path);
     //DEBUGGING
     printf("Made it out of loop\n");
     printf("Closed file\n files[0] = %s\n", files[0]);
@@ -251,9 +247,9 @@ bool make_gen(char* file_path)
     printf("Runnable name: %s", runnable);
     //All meta data has been loaded into memory and the compiler has been determined    
     printf("Initializing objects\n");
-    strncat(objects, build_objects(files, compiler),PATH_MAX);
+    strncat(objects, build_objects(files, compiler, file_count),PATH_MAX);
     printf("Made it out of file loading\n");
-    char* make_path = get_make_path(file_path);
+    char* make_path = change_filename(file_path, "Makefile");
     FILE* makefile = fopen(make_path, "a");
     //start writing to make file
     fprintf(makefile, ".PHONY: clean");

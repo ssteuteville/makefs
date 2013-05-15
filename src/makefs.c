@@ -1,6 +1,6 @@
 #include "parameters.h"
 #include "make_generator.h"
-//#include "meta_system.h"
+#include "meta_system.h"
 
 #include <ctype.h>
 #include <dirent.h>
@@ -51,7 +51,7 @@ int makefs_readlink(const char *path, char *link, size_t size)
 		retval = makefs_error();
 	else
 	{
-		link[retval] = "\0";
+		link[retval] = '\0';
 		retval = 0;
 	}
 	return retval;
@@ -73,7 +73,7 @@ int makefs_mkdir(const char *path, mode_t mode)
 {
 	printf("Entered mkdir");
 	int retval = 0;
-	char rpath[PATH_MAX] = {NULL};
+	char rpath[PATH_MAX] = {'\0'};
 	makefs_realpath(rpath, path);
 	retval = mkdir(rpath, mode);
 	//Add the meta-data to directory
@@ -95,6 +95,7 @@ int makefs_unlink(const char *path)
 	int retval = 0;
 	char rpath[PATH_MAX];
 	makefs_realpath(rpath, path);
+	remove_meta(change_filename(rpath, ".files.txt"), rpath);
 	retval = unlink(rpath);
 	if(retval < 0)
 		retval = makefs_error();
@@ -134,6 +135,7 @@ int makefs_rename(const char *path, const char *newpath)
 	makefs_realpath(rpath, path);
 	makefs_realpath(rnewpath, newpath);
 	retval = rename(rpath, rnewpath);
+	rename_meta(change_filename(rpath, ".files.txt"), rpath, rnewpath);
 	if(retval < 0)
 		retval = makefs_error();
 	return retval;
@@ -408,12 +410,10 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	printf("Entered create, path was %s\n", path);
 	int retval = 0;
 	int fd;
-	char rpath[PATH_MAX] = {NULL};
+	char rpath[PATH_MAX] = {'\0'};
 	makefs_realpath(rpath, path);//get the abosolute path that this file will be created at
-	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //THE LINE BELOW NEEDS TO BE CHANGED ONCE WE USE META_SYSTEM
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	char* meta_path = get_meta_path(rpath);//get the path to this directories metafile
+	printf("rpath was: %s\n", rpath);
+	char* meta_path = change_filename(rpath, ".files.txt");//get the path to this directories metafile
 	printf("Meta path: %s\n", meta_path);
 	
 	printf("rpath before creation: %s\n", rpath);
@@ -422,23 +422,26 @@ int makefs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	{
 		//here we need to strip off all of the flags and call creat on make_path.
 		printf("going to call make_gen\n");
-	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//
     //THE LINE BELOW NEEDS TO BE CHANGED ONCE WE USE META_SYSTEM
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		fd = creat(get_make_path(rpath), mode);
+		fd = creat(change_filename(rpath, "Makefile"), mode);
 		if(make_gen(rpath) == true); //fill the new file with makefile text
 		printf("Makefile created.\n");
 	}
 	else if(correct_type(meta_path, rpath) == true)
 	{
+		printf("meta path : %s\n", meta_path);
 		fd = creat(rpath, mode);
-		add_meta(meta_path, rpath);
+		//meta_path = change_filename(rpath, ".files.txt");
+		add_meta(/*change_filename(rpath, ".files.txt")*/meta_path, rpath);
 	}
 	else
 		fd = creat(rpath, mode);
 	if(fd < 0)
 		retval = makefs_error();
 	fi->fh = fd;
+	free(meta_path);
 	return retval;
 }
 

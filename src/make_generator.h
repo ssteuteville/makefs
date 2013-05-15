@@ -23,14 +23,14 @@ char* determine_compiler(char* meta_path);
 # @param meta_path -- the file to be written to
 # @param file_path -- the path that contains the filename being written
 */
-void add_meta(char* meta_path, char* file_path);
+//void add_meta(char* meta_path, char* file_path);
 
 /* ...:::get_meta_path:::...
 # This function will return the path to the meta file we need
 # @param new_file_path -- the path to the file being worked on
 # @return the path to the meta file we need.
 */ 
-char* get_meta_path(char* new_file_path);
+//char* get_meta_path(char* new_file_path);
 
 /* ...:::make_gen:::...
 # This function will create a make file. It uses various helper functions.
@@ -44,7 +44,7 @@ bool make_gen(char* file_path);
 # @param makefile_name -- the path to a file in the cwd
 # @return the path to a makefile
 */
-char* get_make_path(char* makefile_name);
+//char* get_make_path(char* makefile_name);
 
 /* ...:::get_cflags:::...
 # This function takes an unparsed list of flags in the format .flag1.flag2.flag3 and
@@ -62,7 +62,7 @@ char* get_cflags(char* init_flags);
 # @return this function will return "" if mode = 0
 # it will return either "gcc" or "g++" otherwise
 */
-char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode);
+//char* load_meta(char (*list)[max_files][PATH_MAX], char* meta_path, int mode);
 
-char* build_objects(char list[max_files][PATH_MAX], char* comp);
+char* build_objects(char list[max_files][PATH_MAX], char* comp, int num_files);
 #endif
