@@ -15,7 +15,7 @@ int main(int num_args, char* arg_strings[])
     fgets(path_name, 100, path);*/
 
     char* cmd = "ls -R > files.txt";
-    system(cmd);
+   // system(cmd);
 
     /* open file for reading */
     FILE* input_text = fopen ("files.txt", "r");

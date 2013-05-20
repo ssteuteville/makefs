@@ -4,36 +4,17 @@ using namespace std;
 
 MakeGenerator::MakeGenerator()
 {
-	metaFile = "";
 	makeFile = "";
-	fileName = "";
 }
 
-MakeGenerator::MakeGenerator(string name, string meta, string make)
+MakeGenerator::MakeGenerator(string make)
 {
-	fileName = name;
-	metaName = meta;
-	makeName = make;
-}
-
-void MakeGenerator::setMetaFile(string path)
-{
-	metaFile = path;
+	makeFile = make;
 }
 
 void MakeGenerator::setMakeFile(string path)
 {
-	makefile = path;
-}
-
-void MakeGenerator::setFileName(string name)
-{
-	fileName = name;
-}
-
-string MakeGenerator::getMetaFile()
-{
-	return metaFile;
+	makeFile = path;
 }
 
 string MakeGenerator::getMakeFile()
@@ -41,15 +22,12 @@ string MakeGenerator::getMakeFile()
 	return makeFile;
 }
 
-string MakeGenerator::getFileName()
-{
-	return fileName;
-}
 
 void MakeGenerator::makeGen(vector<string> files, string CFlags) //CFlags format: .flag1.flag2.flag3
 {
 
 	//Declare all variables
+	ofstream fout;
 	stringstream output;
 	string runnable = "";
 	string compiler = "";
@@ -57,16 +35,36 @@ void MakeGenerator::makeGen(vector<string> files, string CFlags) //CFlags format
 	string flags = "";
 	//Name the runnable
 	runnable = files[0];
+	runnable.erase(runnable.begin());
 	files.erase(files.begin());
 	//Determing the compiler
 	compiler = makeCompiler(files);
 	//Build the objects strings
 	objects = makeObjects(files, compiler);
+	cout << objects << endl;
+	flags = makeCFlags(CFlags);
+	fout.open(makeFile.c_str());
+	fout << ".PHONY: clean" << endl;
+	fout << "CC = " << compiler << endl;
+	if(flags == "")
+	{
+		fout << flags << endl;
+	}
+	fout << "CFLAGS = " << flags << endl;
+	fout << "OBJ = " << objects << endl << endl;
+	fout << "%%.o: %%.c" << endl;
+	fout << "\t$(CC) -c -o $@ $< $(CFLAGS)" << endl << endl;
+	fout << runnable << ": $(OBJ)" << endl;
+	fout << "\t$(CC) -o $@ $^ $(CFLAGS)" << endl << endl;
+	fout << "clean:" << endl;
+	fout << "\trm -f " << runnable << " *.o" << endl;
+	fout.close();
 
 }
 
 string MakeGenerator::makeCFlags(string CFlags)
 {
+	cout << "entered makeCFlags" << endl;
 	istringstream iss (CFlags);
 	string ret = "";
 	string result = "";
@@ -84,22 +82,23 @@ string MakeGenerator::makeCFlags(string CFlags)
 string MakeGenerator::makeObjects(vector<string> files, string compiler)
 {
 	stringstream objects;
-	if(compiler == "g++ ")
+	if(compiler == "gcc ")
 	{
-		for(vector<string>::size_type i = 0; i < vector.size(); i++)
+		cout << "Compiler was gcc" << endl;
+		for(vector<string>::size_type i = 0; i < files.size(); i++)
 		{
-			files[i].back() = 'o';
-			objects >> files[i] >> " ";
+			files[i][files[i].size() - 1] = 'o';
+			objects << files[i] << " ";
 		}
 	}
-	else if (compiler == "gcc ")
+	else if (compiler == "g++ ")
 	{
-		for(vector<string>::size_type i = 0; i < vector.size(); i++)
+		for(vector<string>::size_type i = 0; i < files.size(); i++)
 		{
-			files[i].pop_back();
-			files[i].pop_back();
-			files[i].back() = 'o';
-			objects >> files[i] >> " ";
+			files[i].erase(files[i].end() - 2 , files[i].end());
+			cout << files[i] << endl;
+			files[i][files[i].size() -1] = 'o';
+			objects << files[i] << " ";
 		}
 	}
 	return objects.str();
@@ -112,7 +111,7 @@ string MakeGenerator::makeCompiler(vector<string> files)
 	int i = 0;
 	while(!flag)
 	{
-		if (files[i].back() == 'p')
+		if (files[i][files[i].size() -1] == 'p')
 		{
 			compiler = "g++ ";
 			flag = true;
@@ -120,8 +119,9 @@ string MakeGenerator::makeCompiler(vector<string> files)
 		else
 		{
 			compiler = "gcc ";
-			flag = true;		}
+			flag = true;		
+		}
 	i++;
 	}
+	return compiler;
 }
-

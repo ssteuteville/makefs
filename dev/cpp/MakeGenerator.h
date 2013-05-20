@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 using namespace std;
 
@@ -9,19 +10,15 @@ class MakeGenerator
 {
 	public:
 		MakeGenerator();
-		MakeGenerator(string name, string meta, string make);//the paths to these files.
-		void setMetaFile(string path);
+		MakeGenerator(string make);//the paths to these files.
 		void setMakeFile(string path);
-		void setFileName(string name);
-		string getMetaFile(string path);
-		string getMakeFile(string path);
-		string getFileName(string path);
+		string getMakeFile();
 		void makeGen(vector<string> files, string CFlags);
 
 	private:	
-		string makeCFlags();
+		string makeCFlags(string CFlags);
 		string makeObjects(vector<string> files, string compiler);
-		string makeCompiler();
+		string makeCompiler(vector<string> files);
 		string metaFile;
 		string makeFile;
 		string fileName;

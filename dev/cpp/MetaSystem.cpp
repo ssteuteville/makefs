@@ -8,19 +8,17 @@ MetaSystem::MetaSystem()
 	fileName = "";
 	makePath = "";
 	metaPath = "";
-	flags = "";
 
 }
 
-MetaSystem::MetaSystem(string filePath, string cflags)
+MetaSystem::MetaSystem(string filePath)
 {	
 	currentPath = filePath;
 	//get location to /filename in dir/dir/filename
 	unsigned it = filePath.find_last_of("/\\");
 	fileName = filePath.substr(it+1);
-	makePath = changeFileName("Makefile");
+	makePath = changeFileName("makefile");
 	metaPath = changeFileName(".meta.txt");
-	flags = cflags;
 }
 
 void MetaSystem::setCurrentPath(string path)
