@@ -1,5 +1,6 @@
 #include "make_generator.h"
 #include "meta_system.h"
+/*added comment to test SublimeGit :P*/
 bool correct_type(char* meta_path, char* file_path) 
 {
     /*DEBUG*/printf("Entered correct_type: %s %s\n", file_path, meta_path);
