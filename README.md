@@ -1,4 +1,4 @@
-Note: This was my first time ever working in c and I'm aware that there are currently memore issues in the code.
+Note: This was my first time ever working in c and I'm aware that there are currently memory issues in the code.
 
 MAKEFS
 ======
